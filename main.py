@@ -1,4 +1,4 @@
-from flask import Flask, request, make_response, render_template
+from flask import Flask, render_template
 from markupsafe import escape
 
 app = Flask(__name__)
@@ -8,9 +8,11 @@ class Poll:
     name = "Erik"
     question = "why??????"
 
+
 @app.route('/goodbye/<name>')
 def hello(name):
     return f"<h1>Goodbye, !!!!!{escape(name)}!</h1>"
+
 
 @app.route('/index.html')
 def index():
