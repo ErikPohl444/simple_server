@@ -42,10 +42,11 @@ class Room:
         self.is_start = False
 
     def output(self):
-        print(self.name)
+        print(f"Room {self.name}")
         for direction in self.dirs.rose:
             if self.exits[direction]:
                 print(f"Exit to {direction} {self.exits[direction].name}")
+        return f"Room {self.name}"
 
     def make_exit(self, direction, location):
         if direction not in self.dirs.rose:
@@ -55,7 +56,7 @@ class Room:
         location.exits[opp_dir] = self
 
 class Maze:
-    rooms = [[[Room(f"{x}_{y}_{z}") for z in range(5)] for y in range(5)] for x in range(5)]
+    rooms = [[[Room(f"{x}_{y}_{z}") for z in range(8)] for y in range(8)] for x in range(8)]
 
 
 class Poll:
@@ -72,6 +73,10 @@ def hello(name):
 def index():
     return render_template('index.html', hostname="hostname", poll=poll)
 
+@app.route('/maze/<coordinates>')
+def show_user_profile(coordinates):
+    x,y,z = [int(n) for n in coordinates.split('_')]
+    return f'<h1>{maze.rooms[x][y][z].output()}</h1>'
 
 if __name__ == "__main__":
     xection = Room("One")
@@ -85,5 +90,6 @@ if __name__ == "__main__":
     # app.run()
 
     maze = Maze()
-    maze.rooms[0][0][1].output()
+    maze.rooms[1][1][1].output()
     maze.rooms[1][1][4].output()
+    app.run()
