@@ -21,8 +21,7 @@ class Directions:
     def opposite(self, direction):
         return self.rose[len(self.rose)-self.rose.index(direction)-1]
 
-
-class Intersection:
+class Room:
     dirs = Directions()
 
     def __init__(self, name):
@@ -55,6 +54,10 @@ class Intersection:
         opp_dir = self.dirs.opposite(direction)
         location.exits[opp_dir] = self
 
+class Maze:
+    rooms = [[[Room(f"{x}_{y}_{z}") for z in range(5)] for y in range(5)] for x in range(5)]
+
+
 class Poll:
     name = "Erik"
     question = "why??????"
@@ -71,10 +74,16 @@ def index():
 
 
 if __name__ == "__main__":
-    xection = Intersection("One")
-    place = Intersection("Two")
+    xection = Room("One")
+    place = Room("Two")
     xection.make_exit("north", place)
     xection.output()
     place.output()
+    print(vars(place))
+    print(place.__dict__)
     # poll = Poll()
     # app.run()
+
+    maze = Maze()
+    maze.rooms[0][0][1].output()
+    maze.rooms[1][1][4].output()
