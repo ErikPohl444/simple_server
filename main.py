@@ -61,7 +61,8 @@ class Maze:
 
     def __init__(self):
         self.rooms = [[[Room(f"{x}_{y}_{z}") for z in range(8)] for y in range(8)] for x in range(8)]
-        self.frontier = self.rooms.copy()
+        self.frontier = [[[self.rooms[x][y][z].name for x in range(8)] for y in range(8)] for z in range(8)]
+        print(self.frontier)
     def automatically_build(self):
         return None
 
