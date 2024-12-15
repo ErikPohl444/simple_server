@@ -21,6 +21,7 @@ class Directions:
     def opposite(self, direction):
         return self.rose[len(self.rose)-self.rose.index(direction)-1]
 
+
 class Room:
     dirs = Directions()
 
@@ -41,7 +42,6 @@ class Room:
         self.is_finish = False
         self.is_start = False
         self.contents = []
-        
 
     def output(self):
         print(f"Room {self.name}")
@@ -57,15 +57,15 @@ class Room:
         opp_dir = self.dirs.opposite(direction)
         location.exits[opp_dir] = self
 
+
 class Maze:
 
     def __init__(self):
         self.rooms = [[[Room(f"{x}_{y}_{z}") for z in range(8)] for y in range(8)] for x in range(8)]
-        self.frontier = [[[self.rooms[x][y][z].name for x in range(8)] for y in range(8)] for z in range(8)]
-        print(self.frontier)
+        self.frontier = self.rooms.copy
+
     def automatically_build(self):
         return None
-
 
 
 class Poll:
@@ -82,10 +82,12 @@ def hello(name):
 def index():
     return render_template('index.html', hostname="hostname", poll=poll)
 
+
 @app.route('/maze/<coordinates>')
 def show_user_profile(coordinates):
-    x,y,z = [int(n) for n in coordinates.split('_')]
+    x, y, z = [int(n) for n in coordinates.split('_')]
     return f'<h1>{maze.rooms[x][y][z].output()}</h1>'
+
 
 if __name__ == "__main__":
     xection = Room("One")
