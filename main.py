@@ -40,6 +40,8 @@ class Room:
         }
         self.is_finish = False
         self.is_start = False
+        self.contents = []
+        
 
     def output(self):
         print(f"Room {self.name}")
@@ -56,7 +58,13 @@ class Room:
         location.exits[opp_dir] = self
 
 class Maze:
-    rooms = [[[Room(f"{x}_{y}_{z}") for z in range(8)] for y in range(8)] for x in range(8)]
+
+    def __init__(self):
+        self.rooms = [[[Room(f"{x}_{y}_{z}") for z in range(8)] for y in range(8)] for x in range(8)]
+        self.frontier = self.rooms.copy()
+    def automatically_build(self):
+        return None
+
 
 
 class Poll:
