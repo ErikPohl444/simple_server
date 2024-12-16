@@ -64,30 +64,30 @@ class Maze:
                 case "north":
                     ny -= 1
                 case "east":
-                    nx+=1
+                    nx += 1
                 case "west":
-                    nx-=1
+                    nx -= 1
                 case "south":
-                    ny+=1
+                    ny += 1
                 case "southeast":
-                    nx+=1
-                    ny+=1
+                    nx += 1
+                    ny += 1
                 case "southwest":
-                    nx-=1
-                    ny+=1
+                    nx -= 1
+                    ny += 1
                 case "northeast":
-                    ny-=1
-                    nx+=1
+                    ny -= 1
+                    nx += 1
                 case "northwest":
-                    ny-=1
-                    nx-=1
+                    ny -= 1
+                    nx -= 1
                 case "up":
-                    nz-=1
+                    nz -= 1
                 case "down":
-                    nz+=1
+                    nz += 1
                 case _:
                     raise ValueError
-            if any(val for val in [x,y,z] if val <0 or val >7):
+            if any(val for val in [x, y, z] if val < 0 or val > 7):
                 # can't exceed bounds of maze
                 raise ValueError
             elif maze.rooms[nx][ny][nz] not in maze.frontier:
@@ -106,7 +106,6 @@ class Maze:
             if location not in maze.claimed:
                 maze.claimed.append(location)
 
-
     def __init__(self):
         self.rooms = [[[self.Room(f"{x}_{y}_{z}") for z in range(8)] for y in range(8)] for x in range(8)]
         self.frontier = []
@@ -120,7 +119,7 @@ class Maze:
             try:
                 if len(self.claimed) > 0:
                     index = random.randint(0, len(self.claimed)-1)
-                    x,y ,z = self.claimed[index].coordinates()
+                    x, y, z = self.claimed[index].coordinates()
                 else:
                     x = 0
                     y = 0
@@ -128,15 +127,15 @@ class Maze:
                 dindex = random.randint(0, len(Directions.rose))
                 dir = Directions.rose[dindex]
                 self.rooms[x][y][z].make_exit(direction=dir, maze=self)
-            except:
-                 pass
+            except ValueError:
+                pass
         print("maze constructed")
 
         # make exit
 
-#@app.route('/index.html')
-#def index():
-#    return render_template('index.html', hostname="hostname", poll=poll)
+# @app.route('/index.html')
+# def index():
+#     return render_template('index.html', hostname="hostname", poll=poll)
 
 
 @app.route('/maze/<coordinates>')
@@ -148,4 +147,3 @@ def show_user_profile(coordinates):
 if __name__ == "__main__":
     maze = Maze()
     maze.automatically_build()
-
