@@ -87,7 +87,7 @@ class Maze:
                     nz += 1
                 case _:
                     raise ValueError
-            if any(val for val in [x, y, z] if val < 0 or val > 7):
+            if any(val for val in [nx, ny, nz] if val < 0 or val > 7):
                 # can't exceed bounds of maze
                 raise ValueError
             elif maze.rooms[nx][ny][nz] not in maze.frontier:
@@ -127,7 +127,7 @@ class Maze:
                 dindex = random.randint(0, len(Directions.rose))
                 dir = Directions.rose[dindex]
                 self.rooms[x][y][z].make_exit(direction=dir, maze=self)
-            except ValueError:
+            except (ValueError, IndexError):
                 pass
         print("maze constructed")
 
@@ -141,9 +141,15 @@ class Maze:
 @app.route('/maze/<coordinates>')
 def show_user_profile(coordinates):
     x, y, z = [int(n) for n in coordinates.split('_')]
-    return f'<h1>{maze.rooms[x][y][z].output()}</h1>'
+    descr = ''
+    for direction in Directions.rose:
+        if maze.rooms[x][y][z].exits[direction]:
+            descr += f"<h2>Exit to {direction} {maze.rooms[x][y][z].exits[direction].name}</h2>\n"
+
+    return f'<h1>{maze.rooms[x][y][z].output()}</h1>' + descr
 
 
 if __name__ == "__main__":
     maze = Maze()
     maze.automatically_build()
+    app.run(host='0.0.0.0', port=8080, debug=False)
