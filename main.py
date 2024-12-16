@@ -45,6 +45,8 @@ class Maze:
             self.is_start = False
             self.contents = []
 
+        def coordinates(self):
+            return self.name.split(' ')
         def output(self):
             print(f"Room {self.name}")
             for direction in self.dirs.rose:
@@ -52,9 +54,45 @@ class Maze:
                     print(f"Exit to {direction} {self.exits[direction].name}")
             return f"Room {self.name}"
 
-        def make_exit(self, direction, location, maze):
+        def make_exit(self, direction, maze):
             if direction not in self.dirs.rose:
                 raise ValueError
+            x, y, z = self.coordinates()
+            nx, ny, nz = x,y,z
+            match direction:
+                case "north":
+                    ny-=1
+                case "east":
+                    nx+=1
+                case "west":
+                    nx-=1
+                case "south":
+                    ny+=1
+                case "southeast":
+                    nx+=1
+                    ny+=1
+                case "southwest":
+                    nx-=1
+                    ny+=1
+                case "northeast":
+                    ny-=1
+                    nx+=1
+                case "northwest":
+                    ny-=1
+                    nx-=1
+                case "up":
+                    nz-=1
+                case "down":
+                    nz+=1
+                case _:
+                    raise ValueError
+            if any(val for val in [x,y,z] if val <0 or val >8):
+                # can't exceed bounds of maze
+                raise ValueError
+            elif maze.rooms[nx, ny, nz] not in maze.frontier:
+                raise ValueError
+            else:
+                location = maze.rooms[nx, ny, nz]
             self.exits[direction] = location
             opp_dir = self.dirs.opposite(direction)
             location.exits[opp_dir] = self
@@ -64,28 +102,34 @@ class Maze:
             if location in maze.frontier:
                 print(f"removing {location.name} from frontier")
                 maze.frontier.remove(location)
+            if self not in maze.claimed:
+                maze.claimed.append(self)
+            if location not in maze.claimed:
+                maze.claimed.append(location)
+
 
     def __init__(self):
         self.rooms = [[[self.Room(f"{x}_{y}_{z}") for z in range(8)] for y in range(8)] for x in range(8)]
         self.frontier = []
         [[[self.frontier.append(self.rooms[z][y][x]) for z in range(8)] for y in range(8)] for x in range(8)]
+        self.claimed = []
 
     def automatically_build(self):
-        while len(self.frontier) >0:
-            c = random.randint(len(self.frontier))
-            d = random.randint(len(Directions.rose))
-            self.frontier.remove(c)
+        # rule: you can create an exit from a room with one or more exits in it
+        #       but you cannot create an exit into a room with one or more exits into it
+        while len(self.frontier) > 0:
+            if len(maze.claimed) > 0:
+                index = random.randint(len(maze.claimed))
+                x, y, z = maze.claimed[index].coordinates
+            else:
+                x = 0
+                y = 0
+                z = 0
+            # get maze pointer
 
-
-class Poll:
-    name = "Erik"
-    question = "why??????"
-
-
-@app.route('/goodbye/<name>')
-def hello(name):
-    return f"<h1>Goodbye, !!!!!{escape(name)}!</h1>"
-
+            # choose a random claimed room or your base room if claimed = None
+            # choose a random direction
+            # make exit
 
 #@app.route('/index.html')
 #def index():
