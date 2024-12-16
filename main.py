@@ -13,8 +13,8 @@ class Directions:
         "northeast",
         "up",
         "down",
+        "southeast",
         "northwest",
-        "southwest",
         "west",
         "south"
     ]
@@ -35,8 +35,8 @@ class Maze:
                 "east": None,
                 "west": None,
                 "southeast": None,
-                "southwest": None,
                 "northwest": None,
+                "southwest": None,
                 "northeast": None,
                 "up": None,
                 "down": None
