@@ -105,6 +105,7 @@ class Maze:
                 maze.claimed.append(self)
             if location not in maze.claimed:
                 maze.claimed.append(location)
+            return location
 
     def __init__(self):
         self.rooms = [[[self.Room(f"{x}_{y}_{z}") for z in range(8)] for y in range(8)] for x in range(8)]
@@ -115,6 +116,8 @@ class Maze:
     def automatically_build(self):
         # rule: you can create an exit from a room with one or more exits in it
         #       but you cannot create an exit into a room with one or more exits into it
+        self.rooms[0][0][0].is_start = True
+        destination = self.rooms[0][0][0]
         while len(self.frontier) > 0:
             try:
                 if len(self.claimed) > 0:
@@ -126,9 +129,11 @@ class Maze:
                     z = 0
                 dindex = random.randint(0, len(Directions.rose))
                 dir = Directions.rose[dindex]
-                self.rooms[x][y][z].make_exit(direction=dir, maze=self)
+                destination = self.rooms[x][y][z].make_exit(direction=dir, maze=self)
             except (ValueError, IndexError):
                 pass
+        destination.is_end = True
+        print(destination.name)
         print("maze constructed")
 
         # make exit
