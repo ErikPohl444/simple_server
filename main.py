@@ -144,7 +144,9 @@ def show_user_profile(coordinates):
     descr = ''
     for direction in Directions.rose:
         if maze.rooms[x][y][z].exits[direction]:
-            descr += f"<h2>Exit to {direction} {maze.rooms[x][y][z].exits[direction].name}</h2>\n"
+            nextplace = maze.rooms[x][y][z].exits[direction].name
+            print("here", nextplace)
+            descr += f"<h2>Exit to {direction}<a href='http://127.0.0.1:8080/maze/{nextplace}'>{nextplace}</a></h2>"
 
     return f'<h1>{maze.rooms[x][y][z].output()}</h1>' + descr
 
