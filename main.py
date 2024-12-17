@@ -29,18 +29,7 @@ class Maze:
 
         def __init__(self, name):
             self.name = name
-            self.exits = {
-                "north": None,
-                "south": None,
-                "east": None,
-                "west": None,
-                "southeast": None,
-                "southwest": None,
-                "northwest": None,
-                "northeast": None,
-                "up": None,
-                "down": None
-            }
+            self.exits = dict(zip([dir for dir in Directions.rose], [None for dir in Directions.rose]))
             self.is_finish = False
             self.is_start = False
             self.contents = []
@@ -125,7 +114,7 @@ class Maze:
                 maze.claimed.append(location)
             return location
 
-    def __init__(self, name, x_start=0, y_start =0, z_start =0, xbound=8, ybound=8, zbound=8):
+    def __init__(self, name, x_start=0, y_start=0, z_start=0, xbound=8, ybound=8, zbound=8):
         self.name = name
         self.frontier = []
         self.x_start = x_start
