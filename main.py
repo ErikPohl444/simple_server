@@ -121,10 +121,25 @@ class Maze:
                 maze.claimed.append(location)
             return location
 
-    def __init__(self):
-        self.rooms = [[[self.Room(f"{x}_{y}_{z}") for z in range(8)] for y in range(8)] for x in range(8)]
+    def __init__(self, name, xbound=8, ybound=8, zbound=8):
+        self.name = name
+        self.rooms = [
+            [
+                [
+                    self.Room(f"{x}_{y}_{z}") for z in range(zbound)
+                ] for y in range(ybound)
+            ] for x in range(xbound)
+        ]
         self.frontier = []
-        [[[self.frontier.append(self.rooms[z][y][x]) for z in range(8)] for y in range(8)] for x in range(8)]
+        [
+            [
+                [
+                    self.frontier.append(
+                        self.rooms[z][y][x]
+                    ) for z in range(zbound)
+                ] for y in range(ybound)
+            ] for x in range(xbound)
+        ]
         self.claimed = []
 
     def automatically_build(self):
@@ -159,11 +174,13 @@ class Maze:
 
 @app.route('/maze/<coordinates>')
 def show_user_profile(coordinates):
-    x, y, z = [int(n) for n in coordinates.split('_')]
+    x, y, z = [
+        int(n) for n in coordinates.split('_')
+    ]
     return maze.rooms[x][y][z].output_name(True) + maze.rooms[x][y][z].all_exits(True)
 
 
 if __name__ == "__main__":
-    maze = Maze()
+    maze = Maze("Randomized maze", 8, 8, 8)
     maze.automatically_build()
     app.run(host='0.0.0.0', port=8080, debug=False)
