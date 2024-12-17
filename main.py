@@ -48,12 +48,12 @@ class Maze:
         def coordinates(self):
             return int(self.name.split('_')[0]), int(self.name.split('_')[1]), int(self.name.split('_')[2])
 
-        def output_name(self, html):
+        def room_name(self, html):
             room_name = f"Room {self.name}"
             if self.is_start:
-                room_name += "START OF MAZE"
+                room_name += ": START OF MAZE"
             if self.is_finish:
-                room_name += "END OF MAZE"
+                room_name += ": END OF MAZE"
             if html:
                 return f"<h1>{room_name}</h1>"
             return room_name
@@ -71,7 +71,6 @@ class Maze:
                                   f"</h2>")
                     else:
                         exits += f"Exit to {direction} {self.exits[direction].name}\n"
-
             return exits
 
         def make_exit(self, direction, maze):
@@ -126,9 +125,12 @@ class Maze:
                 maze.claimed.append(location)
             return location
 
-    def __init__(self, name, xbound=8, ybound=8, zbound=8):
+    def __init__(self, name, x_start=0, y_start =0, z_start =0, xbound=8, ybound=8, zbound=8):
         self.name = name
         self.frontier = []
+        self.x_start = x_start
+        self.y_start = y_start
+        self.z_start = z_start
         self.rooms = [
             [
                 [
@@ -151,17 +153,18 @@ class Maze:
     def automatically_build(self):
         # rule: you can create an exit from a room with one or more exits in it
         #       but you cannot create an exit into a room with one or more exits into it
-        self.rooms[0][0][0].is_start = True
-        destination = self.rooms[0][0][0]
+
+        self.rooms[self.x_start][self.y_start][self.z_start].is_start = True
+        destination = self.rooms[self.x_start][self.y_start][self.z_start]
         while len(self.frontier) > 0:
             try:
                 if len(self.claimed) > 0:
                     index = random.randint(0, len(self.claimed)-1)
                     x, y, z = self.claimed[index].coordinates()
                 else:
-                    x = 0
-                    y = 0
-                    z = 0
+                    x = self.x_start
+                    y = self.y_start
+                    z = self.z_start
                 dindex = random.randint(0, len(Directions.rose))
                 dir = Directions.rose[dindex]
                 destination = self.rooms[x][y][z].make_exit(direction=dir, maze=self)
@@ -182,10 +185,10 @@ def show_user_profile(coordinates):
     x, y, z = [
         int(n) for n in coordinates.split('_')
     ]
-    return maze.rooms[x][y][z].output_name(True) + maze.rooms[x][y][z].all_exits(True)
+    return maze.rooms[x][y][z].room_name(True) + maze.rooms[x][y][z].all_exits(True)
 
 
 if __name__ == "__main__":
-    maze = Maze("Randomized maze", 8, 8, 8)
+    maze = Maze("Randomized maze", 0, 0, 0, 3, 3, 3)
     maze.automatically_build()
     app.run(host='0.0.0.0', port=8080, debug=False)
