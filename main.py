@@ -5,6 +5,10 @@ import random
 app = Flask(__name__)
 
 
+split_coordinates = lambda coord_string : [
+                int(n) for n in coord_string.split('_')
+            ]
+
 class Directions:
     rose = [
         "north",
@@ -35,7 +39,7 @@ class Maze:
             self.contents = []
 
         def coordinates(self):
-            return int(self.name.split('_')[0]), int(self.name.split('_')[1]), int(self.name.split('_')[2])
+            return split_coordinates(self.name)
 
         def room_name(self, html):
             room_name = f"Room {self.name}"
@@ -170,14 +174,13 @@ def index():
 
 
 @app.route('/maze/<coordinates>')
-def show_user_profile(coordinates):
-    x, y, z = [
-        int(n) for n in coordinates.split('_')
-    ]
+def show_room(coordinates):
+    x, y, z = split_coordinates(coordinates)
     return maze.rooms[x][y][z].room_name(True) + maze.rooms[x][y][z].all_exits(True)
 
 
 if __name__ == "__main__":
+
     maze = Maze("Randomized maze", 0, 0, 0, 3, 3, 3)
     maze.automatically_build()
     app.run(host='0.0.0.0', port=8080, debug=False)
