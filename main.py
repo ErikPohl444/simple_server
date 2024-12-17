@@ -13,7 +13,7 @@ class Directions:
         "northeast",
         "up",
         "down",
-        "southeast",
+        "southwest",
         "northwest",
         "west",
         "south"
@@ -35,8 +35,8 @@ class Maze:
                 "east": None,
                 "west": None,
                 "southeast": None,
-                "northwest": None,
                 "southwest": None,
+                "northwest": None,
                 "northeast": None,
                 "up": None,
                 "down": None
@@ -48,12 +48,26 @@ class Maze:
         def coordinates(self):
             return int(self.name.split('_')[0]), int(self.name.split('_')[1]), int(self.name.split('_')[2])
 
-        def output(self):
-            print(f"Room {self.name}")
-            for direction in self.dirs.rose:
-                if self.exits[direction]:
-                    print(f"Exit to {direction} {self.exits[direction].name}")
+        def output_name(self, html):
+            if html:
+                return f"<h1>Room {self.name}</h1>"
             return f"Room {self.name}"
+
+        def all_exits(self, html):
+            exits = ''
+            for direction in Directions.rose:
+                if self.exits[direction]:
+                    if html:
+                        nextplace = self.exits[direction].name
+                        exits += (f"<h2>"
+                                  f"Exit to {direction}"
+                                  f"<a href='http://127.0.0.1:8080/maze/{nextplace}'>"
+                                  f"{nextplace}</a>"
+                                  f"</h2>")
+                    else:
+                        exits += f"Exit to {direction} {self.exits[direction].name}\n"
+
+            return exits
 
         def make_exit(self, direction, maze):
             if direction not in Directions.rose:
@@ -146,14 +160,7 @@ class Maze:
 @app.route('/maze/<coordinates>')
 def show_user_profile(coordinates):
     x, y, z = [int(n) for n in coordinates.split('_')]
-    descr = ''
-    for direction in Directions.rose:
-        if maze.rooms[x][y][z].exits[direction]:
-            nextplace = maze.rooms[x][y][z].exits[direction].name
-            print("here", nextplace)
-            descr += f"<h2>Exit to {direction}<a href='http://127.0.0.1:8080/maze/{nextplace}'>{nextplace}</a></h2>"
-
-    return f'<h1>{maze.rooms[x][y][z].output()}</h1>' + descr
+    return maze.rooms[x][y][z].output_name(True) + maze.rooms[x][y][z].all_exits(True)
 
 
 if __name__ == "__main__":
