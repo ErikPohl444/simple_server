@@ -49,9 +49,14 @@ class Maze:
             return int(self.name.split('_')[0]), int(self.name.split('_')[1]), int(self.name.split('_')[2])
 
         def output_name(self, html):
+            room_name = f"Room {self.name}"
+            if self.is_start:
+                room_name += "START OF MAZE"
+            if self.is_finish:
+                room_name += "END OF MAZE"
             if html:
-                return f"<h1>Room {self.name}</h1>"
-            return f"Room {self.name}"
+                return f"<h1>{room_name}</h1>"
+            return room_name
 
         def all_exits(self, html):
             exits = ''
@@ -161,15 +166,14 @@ class Maze:
                 destination = self.rooms[x][y][z].make_exit(direction=dir, maze=self)
             except (ValueError, IndexError):
                 pass
-        destination.is_end = True
+        destination.is_finish = True
         print(destination.name)
         print("maze constructed")
 
-        # make exit
 
-# @app.route('/index.html')
-# def index():
-#     return render_template('index.html', hostname="hostname", poll=poll)
+@app.route('/index.html')
+def index():
+    return render_template('index.html', maze=maze)
 
 
 @app.route('/maze/<coordinates>')
