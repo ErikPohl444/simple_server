@@ -128,22 +128,23 @@ class Maze:
 
     def __init__(self, name, xbound=8, ybound=8, zbound=8):
         self.name = name
+        self.frontier = []
         self.rooms = [
             [
                 [
-                    self.Room(f"{x}_{y}_{z}") for z in range(zbound)
+                    self.Room(f"{x}_{y}_{z}")
+                    for z in range(zbound)
                 ] for y in range(ybound)
             ] for x in range(xbound)
         ]
-        self.frontier = []
         [
-            [
-                [
-                    self.frontier.append(
-                        self.rooms[z][y][x]
-                    ) for z in range(zbound)
-                ] for y in range(ybound)
-            ] for x in range(xbound)
+             [
+                 [
+                     self.frontier.append(
+                         self.rooms[z][y][x]
+                     ) for z in range(zbound)
+                 ] for y in range(ybound)
+             ] for x in range(xbound)
         ]
         self.claimed = []
 
