@@ -23,6 +23,19 @@ class Directions:
         "south"
     ]
 
+    rosefun = [
+        lambda x, y, z: (x, y - 1, z),
+        lambda x, y, z: (x - 1, y, z),
+        lambda x, y, z: (x + 1, y+1, z),
+        lambda x, y, z: (x + 1, y-1, z),
+        lambda x, y, z: (x, y, z-1),
+        lambda x, y, z: (x, y, z + 1),
+        lambda x, y, z: (x - 1, y + 1, z),
+        lambda x, y, z: (x - 1, y - 1, z),
+        lambda x, y, z: (x - 1, y, z),
+        lambda x, y, z: (x, y + 1, z)
+    ]
+
     def opposite(self, direction):
         return self.rose[len(self.rose)-self.rose.index(direction)-1]
 
@@ -70,34 +83,7 @@ class Maze:
             if direction not in Directions.rose:
                 raise ValueError
             x, y, z = self.coordinates()
-            nx, ny, nz = x, y, z
-            match direction:
-                case "north":
-                    ny -= 1
-                case "east":
-                    nx += 1
-                case "west":
-                    nx -= 1
-                case "south":
-                    ny += 1
-                case "southeast":
-                    nx += 1
-                    ny += 1
-                case "southwest":
-                    nx -= 1
-                    ny += 1
-                case "northeast":
-                    ny -= 1
-                    nx += 1
-                case "northwest":
-                    ny -= 1
-                    nx -= 1
-                case "up":
-                    nz -= 1
-                case "down":
-                    nz += 1
-                case _:
-                    raise ValueError
+            nx, ny, nz = Directions.rosefun[Directions.rose.index(direction)](x, y, z)
             if any(val for val in [nx, ny, nz] if val < 0 or val > 7):
                 # can't exceed bounds of maze
                 raise ValueError
@@ -120,10 +106,8 @@ class Maze:
 
     def __init__(self, name, x_start=0, y_start=0, z_start=0, xbound=8, ybound=8, zbound=8):
         self.name = name
-        self.frontier = []
-        self.x_start = x_start
-        self.y_start = y_start
-        self.z_start = z_start
+        self.frontier, self.claimed = [], []
+        self.x_start, self.y_start, self.z_start = x_start, y_start, z_start
         self.rooms = [
             [
                 [
@@ -141,7 +125,6 @@ class Maze:
                  ] for y in range(ybound)
              ] for x in range(xbound)
         ]
-        self.claimed = []
 
     def automatically_build(self):
         # rule: you can create an exit from a room with one or more exits in it
@@ -175,7 +158,8 @@ def show_room(coordinates):
 
 
 if __name__ == "__main__":
-
     maze = Maze("Randomized maze", 0, 0, 0, 3, 3, 3)
     maze.automatically_build()
+    print(Directions.rosefun[0](1, 1, 1))
     app.run(host='0.0.0.0', port=8080, debug=False)
+
