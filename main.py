@@ -5,9 +5,9 @@ import random
 app = Flask(__name__)
 
 
-split_coordinates = lambda coord_string : [
-                int(n) for n in coord_string.split('_')
-            ]
+def split_coordinates(coord_string):
+    return [int(n) for n in coord_string.split('_')]
+
 
 class Directions:
     rose = [
@@ -146,7 +146,6 @@ class Maze:
     def automatically_build(self):
         # rule: you can create an exit from a room with one or more exits in it
         #       but you cannot create an exit into a room with one or more exits into it
-
         self.rooms[self.x_start][self.y_start][self.z_start].is_start = True
         destination = self.rooms[self.x_start][self.y_start][self.z_start]
         while len(self.frontier) > 0:
@@ -155,17 +154,13 @@ class Maze:
                     index = random.randint(0, len(self.claimed)-1)
                     x, y, z = self.claimed[index].coordinates()
                 else:
-                    x = self.x_start
-                    y = self.y_start
-                    z = self.z_start
-                dindex = random.randint(0, len(Directions.rose))
-                dir = Directions.rose[dindex]
+                    x, y, z = self.x_start, self.y_start, self.z_start
+                dir = Directions.rose[random.randint(0, len(Directions.rose))]
                 destination = self.rooms[x][y][z].make_exit(direction=dir, maze=self)
             except (ValueError, IndexError):
                 pass
         destination.is_finish = True
-        print(destination.name)
-        print("maze constructed")
+        print(f"maze constructed with this destination: {destination.name}")
 
 
 @app.route('/index.html')
