@@ -175,7 +175,6 @@ def index():
 @app.route('/maze/<coordinates>')
 def show_room(coordinates):
     cipher = Fernet(secret_key)
-
     coordinates = cipher.decrypt(coordinates[2:]).decode()
     x, y, z = split_coordinates(coordinates)
     return maze.rooms[x][y][z].room_name(True) + maze.rooms[x][y][z].all_exits(True)
