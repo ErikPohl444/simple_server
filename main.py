@@ -1,6 +1,7 @@
 from flask import Flask, render_template
 from markupsafe import escape
 import random
+import configparser
 
 app = Flask(__name__)
 
@@ -166,7 +167,12 @@ def show_room(coordinates):
 
 
 if __name__ == "__main__":
-    maze = Maze("Randomized maze", 0, 0, 0, 3, 3, 3)
+    config = configparser.ConfigParser()
+    config.read("maze.ini")
+    maze_name = config["DEFAULT"]["MazeName"]
+    x_start, y_start, z_start = [int(config["DEFAULT"][f"{v}_start"]) for v in ["x", "y", "z"]]
+    xbound, ybound, zbound = [int(config["DEFAULT"][f"{v}bound"]) for v in ["x", "y", "z"]]
+
+    maze = Maze(maze_name, x_start, y_start, z_start, xbound, ybound, zbound)
     maze.automatically_build()
-    print(Directions.rose_funs[0](1, 1, 1))
     app.run(host='0.0.0.0', port=8080, debug=False)
