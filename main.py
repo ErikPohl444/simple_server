@@ -62,6 +62,7 @@ class Maze:
             self.is_finish = False
             self.is_start = False
             self.contents = []
+            self.x, self.y, self.z = split_coordinates(name)
 
         def coordinates(self):
             return split_coordinates(self.name)
