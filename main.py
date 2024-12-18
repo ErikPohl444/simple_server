@@ -36,6 +36,9 @@ class Directions:
         lambda x, y, z: (x, y + 1, z)
     ]
 
+    def direction_move(self, dir, x, y, z):
+        return self.rosefun[self.rose.index(dir)](x, y, z)
+
     def opposite(self, direction):
         return self.rose[len(self.rose)-self.rose.index(direction)-1]
 
@@ -83,9 +86,12 @@ class Maze:
             if direction not in Directions.rose:
                 raise ValueError
             x, y, z = self.coordinates()
-            nx, ny, nz = Directions.rosefun[Directions.rose.index(direction)](x, y, z)
-            if any(val for val in [nx, ny, nz] if val < 0 or val > 7):
-                # can't exceed bounds of maze
+            nx, ny, nz = self.dirs.direction_move(direction, x, y, z)
+            if (
+                    nx < 0 or nx >= maze.xbound
+                    or nz < 0 or nz >= maze.zbound
+                    or ny < 0 or ny >= maze.ybound
+            ):
                 raise ValueError
             elif maze.rooms[nx][ny][nz] not in maze.frontier:
                 raise ValueError
@@ -108,6 +114,7 @@ class Maze:
         self.name = name
         self.frontier, self.claimed = [], []
         self.x_start, self.y_start, self.z_start = x_start, y_start, z_start
+        self.xbound, self.ybound, self.zbound = xbound, ybound, zbound
         self.rooms = [
             [
                 [
@@ -129,8 +136,9 @@ class Maze:
     def automatically_build(self):
         # rule: you can create an exit from a room with one or more exits in it
         #       but you cannot create an exit into a room with one or more exits into it
-        self.rooms[self.x_start][self.y_start][self.z_start].is_start = True
-        destination = self.rooms[self.x_start][self.y_start][self.z_start]
+        starting_place = self.rooms[self.x_start][self.y_start][self.z_start]
+        starting_place.is_start = True
+        destination = starting_place
         while len(self.frontier) > 0:
             try:
                 if len(self.claimed) > 0:
@@ -162,4 +170,3 @@ if __name__ == "__main__":
     maze.automatically_build()
     print(Directions.rosefun[0](1, 1, 1))
     app.run(host='0.0.0.0', port=8080, debug=False)
-
