@@ -6,7 +6,7 @@ app = Flask(__name__)
 
 
 def split_coordinates(coord_string):
-    return [int(n) for n in coord_string.split('_')]
+    return [int(axis) for axis in coord_string.split('_')]
 
 
 class Directions:
@@ -23,7 +23,7 @@ class Directions:
         "south"
     ]
 
-    rosefun = [
+    rose_funs = [
         lambda x, y, z: (x, y - 1, z),
         lambda x, y, z: (x - 1, y, z),
         lambda x, y, z: (x + 1, y+1, z),
@@ -37,7 +37,7 @@ class Directions:
     ]
 
     def direction_move(self, dir, x, y, z):
-        return self.rosefun[self.rose.index(dir)](x, y, z)
+        return self.rose_funs[self.rose.index(dir)](x, y, z)
 
     def opposite(self, direction):
         return self.rose[len(self.rose)-self.rose.index(direction)-1]
@@ -57,21 +57,21 @@ class Maze:
         def coordinates(self):
             return split_coordinates(self.name)
 
-        def room_name(self, html):
+        def room_name(self, in_html):
             room_name = f"Room {self.name}"
             if self.is_start:
                 room_name += ": START OF MAZE"
             if self.is_finish:
                 room_name += ": END OF MAZE"
-            if html:
+            if in_html:
                 return f"<h1>{room_name}</h1>"
             return room_name
 
-        def all_exits(self, html):
+        def all_exits(self, in_html):
             exits = ''
             for direction in Directions.rose:
                 if self.exits[direction]:
-                    if html:
+                    if in_html:
                         nextplace = self.exits[direction].name
                         exits += (f"<h2>"
                                   f"Exit to {direction}"
@@ -86,17 +86,17 @@ class Maze:
             if direction not in Directions.rose:
                 raise ValueError
             x, y, z = self.coordinates()
-            nx, ny, nz = self.dirs.direction_move(direction, x, y, z)
+            next_x, next_y, next_z = self.dirs.direction_move(direction, x, y, z)
             if (
-                    nx < 0 or nx >= maze.xbound
-                    or nz < 0 or nz >= maze.zbound
-                    or ny < 0 or ny >= maze.ybound
+                    next_x < 0 or next_x >= maze.xbound
+                    or next_z < 0 or next_z >= maze.zbound
+                    or next_y < 0 or next_y >= maze.ybound
             ):
                 raise ValueError
-            elif maze.rooms[nx][ny][nz] not in maze.frontier:
+            elif maze.rooms[next_x][next_y][next_z] not in maze.frontier:
                 raise ValueError
             else:
-                location = maze.rooms[nx][ny][nz]
+                location = maze.rooms[next_x][next_y][next_z]
             self.exits[direction] = location
             opp_dir = self.dirs.opposite(direction)
             location.exits[opp_dir] = self
@@ -168,5 +168,5 @@ def show_room(coordinates):
 if __name__ == "__main__":
     maze = Maze("Randomized maze", 0, 0, 0, 3, 3, 3)
     maze.automatically_build()
-    print(Directions.rosefun[0](1, 1, 1))
+    print(Directions.rose_funs[0](1, 1, 1))
     app.run(host='0.0.0.0', port=8080, debug=False)
