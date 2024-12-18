@@ -2,12 +2,20 @@ from flask import Flask, render_template
 from markupsafe import escape
 import random
 import configparser
+from cryptography.fernet import Fernet
 
 app = Flask(__name__)
 
 
+
+
 def split_coordinates(coord_string):
     return [int(axis) for axis in coord_string.split('_')]
+
+
+
+secret_key = Fernet.generate_key()
+
 
 
 class Directions:
@@ -74,9 +82,11 @@ class Maze:
                 if self.exits[direction]:
                     if in_html:
                         nextplace = self.exits[direction].name
+                        cipher = Fernet(secret_key)
+                        nextplace_url = cipher.encrypt(nextplace.encode())
                         exits += (f"<h2>"
                                   f"Exit to {direction}"
-                                  f"<a href='http://127.0.0.1:8080/maze/{nextplace}'>"
+                                  f'<a href="http://127.0.0.1:8080/maze/{nextplace_url}">'
                                   f"{nextplace}</a>"
                                   f"</h2>")
                     else:
@@ -133,6 +143,8 @@ class Maze:
                  ] for y in range(ybound)
              ] for x in range(xbound)
         ]
+        cipher = Fernet(secret_key)
+        self.start_url = cipher.encrypt('0_0_0'.encode())
 
     def automatically_build(self):
         # rule: you can create an exit from a room with one or more exits in it
@@ -162,6 +174,9 @@ def index():
 
 @app.route('/maze/<coordinates>')
 def show_room(coordinates):
+    cipher = Fernet(secret_key)
+
+    coordinates = cipher.decrypt(coordinates[2:]).decode()
     x, y, z = split_coordinates(coordinates)
     return maze.rooms[x][y][z].room_name(True) + maze.rooms[x][y][z].all_exits(True)
 
