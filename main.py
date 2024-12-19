@@ -158,6 +158,7 @@ class Maze:
         with open(self.maze_file, 'rb') as maze_handle:
             self.rooms = pickle.load(maze_handle)
 
+
 @app.route('/')
 @app.route('/index.html')
 def index():
