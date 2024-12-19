@@ -155,7 +155,7 @@ class Maze:
 @app.route('/')
 @app.route('/index.html')
 def index():
-    return render_template('index.html', maze=maze)
+    return render_template('index.html', hostname=request.host, maze=maze)
 
 
 @app.route('/maze/<coordinates>')
