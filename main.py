@@ -116,8 +116,9 @@ class Maze:
                 maze.claimed.append(location)
             return location
 
-    def __init__(self, name, x_start=0, y_start=0, z_start=0, xbound=8, ybound=8, zbound=8):
+    def __init__(self, name, file_name, x_start=0, y_start=0, z_start=0, xbound=8, ybound=8, zbound=8):
         self.name = name
+        self.maze_file = file_name
         self.frontier, self.claimed = [], []
         self.x_start, self.y_start, self.z_start = x_start, y_start, z_start
         self.xbound, self.ybound, self.zbound = xbound, ybound, zbound
@@ -150,11 +151,11 @@ class Maze:
         print(f"maze constructed with this destination: {destination.name}")
 
     def save_me(self):
-        with open('maze.pkl', 'wb') as maze_handle:
+        with open(self.maze_file, 'wb') as maze_handle:
             pickle.dump(self.rooms, maze_handle)
 
     def load_maze(self):
-        with open('maze.pkl', 'rb') as maze_handle:
+        with open(self.maze_file, 'rb') as maze_handle:
             self.rooms = pickle.load(maze_handle)
 
 @app.route('/')
@@ -174,9 +175,9 @@ def show_room(coordinates):
 if __name__ == "__main__":
     config = configparser.ConfigParser()
     config.read("maze.ini")
-    maze_name = config["DEFAULT"]["MazeName"]
+    maze_name, maze_file = config["DEFAULT"]["MazeName"], config["DEFAULT"]["MazeFile"]
     x_start, y_start, z_start = [int(config["DEFAULT"][f"{v}_start"]) for v in ["x", "y", "z"]]
     xbound, ybound, zbound = [int(config["DEFAULT"][f"{v}bound"]) for v in ["x", "y", "z"]]
-    maze = Maze(maze_name, x_start, y_start, z_start, xbound, ybound, zbound)
+    maze = Maze(maze_name, maze_file, x_start, y_start, z_start, xbound, ybound, zbound)
     maze.automatically_build()
     app.run(host='0.0.0.0', port=8080, debug=False)
