@@ -139,14 +139,11 @@ class Maze:
         #       but you cannot create an exit into a room with one or more exits into it
         starting_place = self.rooms[self.x_start][self.y_start][self.z_start]
         starting_place.is_start = True
+        self.claimed.append(starting_place)
         destination = starting_place
         while len(self.frontier) > 0:
             try:
-                if len(self.claimed) > 0:
-                    index = random.randint(0, len(self.claimed)-1)
-                    x, y, z = self.claimed[index].coordinates()
-                else:
-                    x, y, z = self.x_start, self.y_start, self.z_start
+                x, y, z = self.claimed[random.randint(0, len(self.claimed)-1)].coordinates()
                 dir = Directions.rose[random.randint(0, len(Directions.rose))]
                 destination = self.rooms[x][y][z].make_exit(direction=dir, maze=self)
             except (ValueError, IndexError):
