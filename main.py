@@ -1,18 +1,16 @@
 from flask import Flask, render_template, request
-from markupsafe import escape
 import random
 import configparser
 from cryptography.fernet import Fernet
 import numpy as np
+import pickle
 
 app = Flask(__name__)
+secret_key = Fernet.generate_key()
 
 
 def split_coordinates(coord_string):
     return [int(axis) for axis in coord_string.split('_')]
-
-
-secret_key = Fernet.generate_key()
 
 
 class Directions:
@@ -151,6 +149,13 @@ class Maze:
         destination.is_finish = True
         print(f"maze constructed with this destination: {destination.name}")
 
+    def save_me(self):
+        with open('maze.pkl', 'wb') as maze_handle:
+            pickle.dump(self.rooms, maze_handle)
+
+    def load_maze(self):
+        with open('maze.pkl', 'rb') as maze_handle:
+            self.rooms = pickle.load(maze_handle)
 
 @app.route('/')
 @app.route('/index.html')
