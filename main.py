@@ -3,6 +3,7 @@ from markupsafe import escape
 import random
 import configparser
 from cryptography.fernet import Fernet
+import numpy as np
 
 app = Flask(__name__)
 
@@ -77,16 +78,16 @@ class Maze:
             exits = ''
             for direction in Directions.rose:
                 if self.exits[direction]:
+                    nextplace = self.exits[direction].name
+                    exitstr = f"Exit to {direction} {nextplace}\n"
                     if in_html:
-                        nextplace = self.exits[direction].name
                         nextplace_url = Fernet(secret_key).encrypt(nextplace.encode())
-                        exits += (f"<h2>"
+                        exitstr = (f"<h2>"
                                   f"Exit to {direction}"
                                   f'<a href="http://127.0.0.1:8080/maze/{nextplace_url}">'
                                   f"{nextplace}</a>"
                                   f"</h2>")
-                    else:
-                        exits += f"Exit to {direction} {self.exits[direction].name}\n"
+                    exits += exitstr
             return exits
 
         def make_exit(self, direction, maze):
@@ -130,15 +131,7 @@ class Maze:
                 ] for y in range(ybound)
             ] for x in range(xbound)
         ]
-        [
-             [
-                 [
-                     self.frontier.append(
-                         self.rooms[z][y][x]
-                     ) for z in range(zbound)
-                 ] for y in range(ybound)
-             ] for x in range(xbound)
-        ]
+        self.frontier = np.array(self.rooms).flatten().tolist()
         self.start_url = Fernet(secret_key).encrypt(f'{x_start}_{y_start}_{z_start}'.encode())
 
     def automatically_build(self):
