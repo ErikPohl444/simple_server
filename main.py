@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 from markupsafe import escape
 import random
 import configparser
@@ -83,10 +83,10 @@ class Maze:
                     if in_html:
                         nextplace_url = Fernet(secret_key).encrypt(nextplace.encode())
                         exitstr = (f"<h2>"
-                                  f"Exit to {direction}"
-                                  f'<a href="http://127.0.0.1:8080/maze/{nextplace_url}">'
-                                  f"{nextplace}</a>"
-                                  f"</h2>")
+                                   f"Exit to {direction}"
+                                   f'<a href="http://{request.host}/maze/{nextplace_url}">'
+                                   f"{nextplace}</a>"
+                                   f"</h2>")
                     exits += exitstr
             return exits
 
@@ -152,8 +152,10 @@ class Maze:
         print(f"maze constructed with this destination: {destination.name}")
 
 
+@app.route('/')
 @app.route('/index.html')
 def index():
+    print(request.host)
     return render_template('index.html', maze=maze)
 
 
@@ -171,7 +173,6 @@ if __name__ == "__main__":
     maze_name = config["DEFAULT"]["MazeName"]
     x_start, y_start, z_start = [int(config["DEFAULT"][f"{v}_start"]) for v in ["x", "y", "z"]]
     xbound, ybound, zbound = [int(config["DEFAULT"][f"{v}bound"]) for v in ["x", "y", "z"]]
-
     maze = Maze(maze_name, x_start, y_start, z_start, xbound, ybound, zbound)
     maze.automatically_build()
     app.run(host='0.0.0.0', port=8080, debug=False)
