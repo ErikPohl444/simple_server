@@ -4,6 +4,7 @@ import configparser
 from cryptography.fernet import Fernet
 import numpy as np
 import pickle
+from setup_logging import logger
 
 app = Flask(__name__)
 secret_key = Fernet.generate_key()
@@ -150,7 +151,7 @@ class Maze:
             except (ValueError, IndexError):
                 pass
         self.destination.is_finish = True
-        print(f"maze constructed with this destination: {self.destination.name}")
+        logger.info(f"maze constructed with this destination: {self.destination.name}")
 
     def save_me(self):
         with open(self.maze_file, 'wb') as maze_handle:
@@ -187,13 +188,13 @@ def index():
         return (render_template('index.html', hostname=request.host, maze=maze),200)
     if request.method == "POST":
         if request.form['submit_button'] == "save_maze":
-            print("save button clicked")
+            logger.info("save button clicked")
             maze.save_me()
-            print("save completed")
+            logger.info("save completed")
         if request.form['submit_button'] == "load_maze":
-            print("load button clicked")
+            logger.info("load button clicked")
             maze.load_maze()
-            print("load completed")
+            logger.info("load completed")
     return (render_template('index.html', hostname=request.host, maze=maze),200)
 
 
