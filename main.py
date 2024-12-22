@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, make_response
 import random
 import configparser
 from cryptography.fernet import Fernet
@@ -180,26 +180,21 @@ class Maze:
     return solve_path(self.destination, self.starting_place, '')
 '''
 
-@app.route('/')
-@app.route('/index.html')
+@app.route('/', methods = ["GET", "POST"])
+@app.route('/index.html', methods = ["GET", "POST"])
 def index():
-    return render_template('index.html', hostname=request.host, maze=maze)
-
-
-@app.route('/savemaze', methods=["POST"])
-def save_button():
-    if request.method == "POST":
-        print("button clicked")
-        maze.save_me()
-    return render_template('index.html', hostname=request.host, maze=maze)
-
-
-@app.route('/loadmaze', methods=["GET"])
-def load_button():
     if request.method == "GET":
-        print("button clicked")
-        maze.load_maze()
-    return render_template('index.html', hostname=request.host, maze=maze)
+        return (render_template('index.html', hostname=request.host, maze=maze),200)
+    if request.method == "POST":
+        if request.form['submit_button'] == "save_maze":
+            print("save button clicked")
+            maze.save_me()
+            print("save completed")
+        if request.form['submit_button'] == "load_maze":
+            print("load button clicked")
+            maze.load_maze()
+            print("load completed")
+    return (render_template('index.html', hostname=request.host, maze=maze),200)
 
 
 @app.route('/maze/<coordinates>')
@@ -207,7 +202,7 @@ def show_room(coordinates):
     cipher = Fernet(secret_key)
     coordinates = cipher.decrypt(coordinates[2:]).decode()
     x, y, z = split_coordinates(coordinates)
-    return maze.rooms[x][y][z].room_name(True) + maze.rooms[x][y][z].all_exits(True)
+    return (maze.rooms[x][y][z].room_name(True) + maze.rooms[x][y][z].all_exits(True), "200")
 
 
 if __name__ == "__main__":
