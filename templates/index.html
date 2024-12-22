@@ -20,6 +20,12 @@
         <div class="jumbotron">
             <h2><a href="http://127.0.0.1:8080/maze/{{ maze.start_url }}">Start here</a></h2>
         </div>
+        <form method="POST" action="/savemaze">
+            <button type="submit">Save Maze</button>
+        </form>
+        <form method="GET" action="/loadmaze">
+            <button type="submit">Load Maze</button>
+        </form>
         <footer class="footer">
             <p> Served by {{hostname}}</p>
             <p> &copy; December 2024</p>

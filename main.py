@@ -132,23 +132,25 @@ class Maze:
         ]
         self.frontier = np.array(self.rooms).flatten().tolist()
         self.start_url = Fernet(secret_key).encrypt(f'{x_start}_{y_start}_{z_start}'.encode())
+        self.starting_place = None
+        self.destination = None
 
     def automatically_build(self):
         # rule: you can create an exit from a room with one or more exits in it
         #       but you cannot create an exit into a room with one or more exits into it
-        starting_place = self.rooms[self.x_start][self.y_start][self.z_start]
-        starting_place.is_start = True
-        self.claimed.append(starting_place)
-        destination = starting_place
+        self.starting_place = self.rooms[self.x_start][self.y_start][self.z_start]
+        self.starting_place.is_start = True
+        self.claimed.append(self.starting_place)
+        self.destination = self.starting_place
         while len(self.frontier) > 0:
             try:
                 x, y, z = self.claimed[random.randint(0, len(self.claimed)-1)].coordinates()
                 dir = Directions.rose[random.randint(0, len(Directions.rose))]
-                destination = self.rooms[x][y][z].make_exit(direction=dir, maze=self)
+                self.destination = self.rooms[x][y][z].make_exit(direction=dir, maze=self)
             except (ValueError, IndexError):
                 pass
-        destination.is_finish = True
-        print(f"maze constructed with this destination: {destination.name}")
+        self.destination.is_finish = True
+        print(f"maze constructed with this destination: {self.destination.name}")
 
     def save_me(self):
         with open(self.maze_file, 'wb') as maze_handle:
@@ -158,10 +160,45 @@ class Maze:
         with open(self.maze_file, 'rb') as maze_handle:
             self.rooms = pickle.load(maze_handle)
 
+'''
+    def solve_maze(self):
+
+            def solve_path(end, current_place, path):
+                if current_place == end:
+                    return path
+                else:
+                    for direction in Directions.rose:
+                        if current_place.exits[direction]:
+                            x, y, z = split_coordinates(current_place.name)
+                            next_x, next_y, next_z = Directions.direction_move(direction, x, y, z)
+                            return solve_path(end, self.rooms[next_x][next_y][next_z], path + "," + direction)
+
+            start = self.starting_place
+            end = self.destination
+        return solve_path(end, start, '')
+
+    return solve_path(self.destination, self.starting_place, '')
+'''
 
 @app.route('/')
 @app.route('/index.html')
 def index():
+    return render_template('index.html', hostname=request.host, maze=maze)
+
+
+@app.route('/savemaze', methods=["POST"])
+def save_button():
+    if request.method == "POST":
+        print("button clicked")
+        maze.save_me()
+    return render_template('index.html', hostname=request.host, maze=maze)
+
+
+@app.route('/loadmaze', methods=["GET"])
+def load_button():
+    if request.method == "GET":
+        print("button clicked")
+        maze.load_maze()
     return render_template('index.html', hostname=request.host, maze=maze)
 
 
