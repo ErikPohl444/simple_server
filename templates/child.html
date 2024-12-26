@@ -2,12 +2,12 @@
 {% block title %}Index{% endblock %}
 {% block head %}
   {{ super() }}
-  <style type="text/css">
-    .important { color: #336699; }
-  </style>
 {% endblock %}
 {% block content %}
-  <h1>Index</h1>
-  <p class="important">
-    Welcome on my awesome homepage.
+    <div class="jumbotron">
+    <h2><a href="http://127.0.0.1:8080/maze/{{maze.start_url}}">Start here</a></h2>
+    <form method="POST" action="/child.html">
+    <button type="submit" name="submit_button" value="save_maze">Save Maze</button>
+    <button type="submit" name="submit_button" value="load_maze">Load Maze</button>
+    </form>
 {% endblock %}
