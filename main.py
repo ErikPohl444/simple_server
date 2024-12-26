@@ -198,6 +198,12 @@ def index():
     return (render_template('index.html', hostname=request.host, maze=maze),200)
 
 
+@app.route('/child.html', methods = ["GET"])
+def child():
+    if request.method == "GET":
+        return (render_template('child.html', hostname=request.host, maze=maze),200)
+
+
 @app.route('/maze/<coordinates>')
 def show_room(coordinates):
     cipher = Fernet(secret_key)
