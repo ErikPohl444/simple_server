@@ -198,10 +198,10 @@ def index():
     return (render_template('index.html', hostname=request.host, maze=maze),200)
 
 
-@app.route('/child.html', methods = ["GET"])
-def child():
+@app.route('/start.html', methods = ["GET"])
+def start():
     if request.method == "GET":
-        return (render_template('child.html', hostname=request.host, maze=maze),200)
+        return (render_template('start.html', hostname=request.host, maze=maze),200)
 
 
 @app.route('/maze/<coordinates>')
@@ -210,7 +210,8 @@ def show_room(coordinates):
     coordinates = cipher.decrypt(coordinates[2:]).decode()
     x, y, z = split_coordinates(coordinates)
     logger.info("showing room {x} {y} {z}")
-    return (maze.rooms[x][y][z].room_name(True) + maze.rooms[x][y][z].all_exits(True), "200")
+    return (render_template('room.html', roomname=maze.rooms[x][y][z].room_name(True), exits=maze.rooms[x][y][z].all_exits(True)),200)
+        # (maze.rooms[x][y][z].room_name(True) + maze.rooms[x][y][z].all_exits(True), "200")
 
 
 if __name__ == "__main__":
