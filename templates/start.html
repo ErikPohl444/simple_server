@@ -5,7 +5,7 @@
 {% endblock %}
 {% block content %}
     <div class="jumbotron-fluid bg-warning" >
-    <h2><a href="http://127.0.0.1:8080/maze/{{maze.start_url}}">Start here</a></h2>
+    <h2><a href="http://{{ hostname}}/maze/{{maze.start_url}}">Start here</a></h2>
     </div>
     <div method ="POST" action="/start.html" class="btn-group" role="group">
         <button type="submit" class="btn btn-dark" name="submit_button" value="save_maze">Save Maze</button>
