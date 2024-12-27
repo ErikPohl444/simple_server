@@ -1,5 +1,5 @@
 {% extends "layout.html" %}
-{% block title %}Index{% endblock %}
+{% block title %}Maze Start{% endblock %}
 {% block head %}
   {{ super() }}
 {% endblock %}
@@ -7,10 +7,6 @@
     <div class="jumbotron-fluid bg-warning" >
     <h2><a href="http://127.0.0.1:8080/maze/{{maze.start_url}}">Start here</a></h2>
     </div>
-    <form method="POST" action="/start.html">
-    <button type="submit" name="submit_button" value="save_maze">Save Maze</button>
-    <button type="submit" name="submit_button" value="load_maze">Load Maze</button>
-    </form>
     <div method ="POST" action="/start.html" class="btn-group" role="group">
         <button type="submit" class="btn btn-dark" name="submit_button" value="save_maze">Save Maze</button>
         <button type="submit" class="btn btn-info" name="submit_button" value="load_maze">Load Maze</button>
