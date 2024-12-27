@@ -82,7 +82,7 @@ class Maze:
                     nextplace = self.exits[direction].name
                     exitstr = f"Exit to {direction} {nextplace}\n"
                     if in_html:
-                        nextplace_url = Fernet(secret_key).encrypt(nextplace.encode())
+                        nextplace_url = Fernet(secret_key).encrypt(nextplace.encode()).decode("utf-8")
                         exitstr = (f'<li class="list-group-item">'
                                    f"Exit {direction} to room "
                                    f'<a href="http://{request.host}/maze/{nextplace_url}">'
@@ -136,7 +136,7 @@ class Maze:
             ] for x in range(xbound)
         ]
         self.frontier = np.array(self.rooms).flatten().tolist()
-        self.start_url = Fernet(secret_key).encrypt(f'{x_start}_{y_start}_{z_start}'.encode())
+        self.start_url = Fernet(secret_key).encrypt(f'{x_start}_{y_start}_{z_start}'.encode()).decode("utf-8")
         self.starting_place = None
         self.destination = None
 
@@ -191,7 +191,10 @@ class Maze:
 @app.route('/index.html', methods=["GET", "POST"])
 def index():
     if request.method == "GET":
-        return render_template('index.html', hostname=request.host, maze=maze), 200
+        return render_template(
+            'index.html',
+            hostname=request.host,
+            maze=maze), 200
     if request.method == "POST":
         if request.form['submit_button'] == "save_maze":
             logger.info("save button clicked")
@@ -207,14 +210,20 @@ def index():
 @app.route('/start.html', methods=["GET"])
 def start():
     title = "Maze Start"
+    logger.info("showing start page")
     if request.method == "GET":
-        return render_template('start.html', title_text=title, hostname=request.host, maze=maze), 200
+        return render_template(
+            'start.html',
+            title_text=title,
+            hostname=request.host,
+            maze=maze
+        ), 200
 
 
 @app.route('/maze/<coordinates>')
 def show_room(coordinates):
     cipher = Fernet(secret_key)
-    coordinates = cipher.decrypt(coordinates[2:]).decode()
+    coordinates = cipher.decrypt(coordinates).decode()
     x, y, z = split_coordinates(coordinates)
     title = "Maze Room"
     logger.info("showing room {x} {y} {z}")
