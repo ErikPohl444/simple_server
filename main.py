@@ -90,7 +90,7 @@ class Maze:
                                    f"</li>")
                     exits += exitstr
             if in_html:
-                exits+="</ul>"
+                exits += "</ul>"
             return exits
 
         def make_exit(self, direction, maze):
@@ -165,6 +165,7 @@ class Maze:
         with open(self.maze_file, 'rb') as maze_handle:
             self.rooms = pickle.load(maze_handle)
 
+
 '''
     def solve_maze(self):
 
@@ -185,11 +186,12 @@ class Maze:
     return solve_path(self.destination, self.starting_place, '')
 '''
 
-@app.route('/', methods = ["GET", "POST"])
-@app.route('/index.html', methods = ["GET", "POST"])
+
+@app.route('/', methods=["GET", "POST"])
+@app.route('/index.html', methods=["GET", "POST"])
 def index():
     if request.method == "GET":
-        return (render_template('index.html', hostname=request.host, maze=maze),200)
+        return render_template('index.html', hostname=request.host, maze=maze), 200
     if request.method == "POST":
         if request.form['submit_button'] == "save_maze":
             logger.info("save button clicked")
@@ -199,13 +201,14 @@ def index():
             logger.info("load button clicked")
             maze.load_maze()
             logger.info("load completed")
-    return (render_template('index.html', hostname=request.host, maze=maze),200)
+    return render_template('index.html', hostname=request.host, maze=maze), 200
 
 
-@app.route('/start.html', methods = ["GET"])
+@app.route('/start.html', methods=["GET"])
 def start():
+    title = "Maze Start"
     if request.method == "GET":
-        return (render_template('start.html', hostname=request.host, maze=maze),200)
+        return render_template('start.html', title_text=title, hostname=request.host, maze=maze), 200
 
 
 @app.route('/maze/<coordinates>')
@@ -213,9 +216,17 @@ def show_room(coordinates):
     cipher = Fernet(secret_key)
     coordinates = cipher.decrypt(coordinates[2:]).decode()
     x, y, z = split_coordinates(coordinates)
+    title = "Maze Room"
     logger.info("showing room {x} {y} {z}")
-    return (render_template('room.html', hostname=request.host, roomname=maze.rooms[x][y][z].room_name(True), exits=maze.rooms[x][y][z].all_exits(True)),200)
-        # (maze.rooms[x][y][z].room_name(True) + maze.rooms[x][y][z].all_exits(True), "200")
+    return (
+        render_template(
+            'room.html',
+            title_text=title,
+            hostname=request.host,
+            roomname=maze.rooms[x][y][z].room_name(True),
+            exits=maze.rooms[x][y][z].all_exits(True)),
+        200
+    )
 
 
 if __name__ == "__main__":
