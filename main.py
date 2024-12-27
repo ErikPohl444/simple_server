@@ -75,18 +75,22 @@ class Maze:
 
         def all_exits(self, in_html):
             exits = ''
+            if in_html:
+                exits = '<ul class="list-group">'
             for direction in Directions.rose:
                 if self.exits[direction]:
                     nextplace = self.exits[direction].name
                     exitstr = f"Exit to {direction} {nextplace}\n"
                     if in_html:
                         nextplace_url = Fernet(secret_key).encrypt(nextplace.encode())
-                        exitstr = (f"<h2>"
-                                   f"Exit to {direction}"
+                        exitstr = (f'<li class="list-group-item">'
+                                   f"Exit {direction} to room "
                                    f'<a href="http://{request.host}/maze/{nextplace_url}">'
                                    f"{nextplace}</a>"
-                                   f"</h2>")
+                                   f"</li>")
                     exits += exitstr
+            if in_html:
+                exits+="</ul>"
             return exits
 
         def make_exit(self, direction, maze):
@@ -210,7 +214,7 @@ def show_room(coordinates):
     coordinates = cipher.decrypt(coordinates[2:]).decode()
     x, y, z = split_coordinates(coordinates)
     logger.info("showing room {x} {y} {z}")
-    return (render_template('room.html', roomname=maze.rooms[x][y][z].room_name(True), exits=maze.rooms[x][y][z].all_exits(True)),200)
+    return (render_template('room.html', hostname=request.host, roomname=maze.rooms[x][y][z].room_name(True), exits=maze.rooms[x][y][z].all_exits(True)),200)
         # (maze.rooms[x][y][z].room_name(True) + maze.rooms[x][y][z].all_exits(True), "200")
 
 
