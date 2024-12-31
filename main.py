@@ -192,7 +192,7 @@ class Maze:
 def index():
     if request.method == "GET":
         return render_template(
-            'index.html',
+            'start.html',
             hostname=request.host,
             maze=maze), 200
     if request.method == "POST":
@@ -204,7 +204,7 @@ def index():
             logger.info("load button clicked")
             maze.load_maze()
             logger.info("load completed")
-    return render_template('index.html', hostname=request.host, maze=maze), 200
+    return render_template('start.html', hostname=request.host, maze=maze), 200
 
 
 @app.route('/start.html', methods=["GET"])
