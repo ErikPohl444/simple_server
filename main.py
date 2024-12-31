@@ -190,8 +190,10 @@ class Maze:
 
 
 @app.route('/', methods=["GET", "POST"])
-@app.route('/index.html', methods=["GET", "POST"])
-def index():
+@app.route('/start.html', methods=["GET", "POST"])
+def start():
+    title = "Maze Start"
+    logger.info("showing start page")
     if request.method == "GET":
         return render_template(
             'start.html',
@@ -209,11 +211,7 @@ def index():
             logger.info("load completed")
     return render_template('start.html', hostname=request.host, maze=maze), 200
 
-
-@app.route('/start.html', methods=["GET"])
-def start():
-    title = "Maze Start"
-    logger.info("showing start page")
+'''
     if request.method == "GET":
         return render_template(
             'start.html',
@@ -221,7 +219,7 @@ def start():
             hostname=request.host,
             maze=maze
         ), 200
-
+'''
 
 @app.route('/maze/<coordinates>')
 def show_room(coordinates):
