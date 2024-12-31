@@ -162,6 +162,8 @@ class Maze:
             pickle.dump(self.rooms, maze_handle)
 
     def load_maze(self):
+        logger.info("loading maze")
+        print("loading maze")
         with open(self.maze_file, 'rb') as maze_handle:
             self.rooms = pickle.load(maze_handle)
 
@@ -196,6 +198,7 @@ def index():
             hostname=request.host,
             maze=maze), 200
     if request.method == "POST":
+        print(request.form)
         if request.form['submit_button'] == "save_maze":
             logger.info("save button clicked")
             maze.save_me()
