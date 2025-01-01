@@ -1,13 +1,13 @@
 {% extends "layout.html" %}
 {% block title %}{{ title_text }}{% endblock %}
 {% block head %}
-  {{ super() }}
+    {{ super() }}
 {% endblock %}
 {% block content %}
-    <div class="jumbotron-fluid bg-warning" >
-    <h2><a href="http://{{hostname}}/maze/{{maze.start_url}}">Start here</a></h2>
+    <div class="jumbotron-fluid bg-warning">
+        <h2><a href="http://{{hostname}}/maze/{{maze.start_url}}">Start here</a></h2>
     </div>
-    <form method ="POST" action="/start.html" class="btn-group" role="group">
+    <form method="POST" action="/start.html" class="btn-group" role="group">
         <button type="submit" class="btn btn-dark" name="submit_button" value="save_maze">Save Maze</button>
         <button type="submit" class="btn btn-info" name="submit_button" value="load_maze">Load Maze</button>
     </form>
