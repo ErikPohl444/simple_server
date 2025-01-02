@@ -211,6 +211,7 @@ def start():
             logger.info("load completed")
     return render_template('start.html', hostname=request.host, maze=maze), 200
 
+
 '''
     if request.method == "GET":
         return render_template(
@@ -220,6 +221,7 @@ def start():
             maze=maze
         ), 200
 '''
+
 
 @app.route('/maze/<coordinates>')
 def show_room(coordinates):
