@@ -1,10 +1,13 @@
-from flask import Flask, render_template, request, make_response
+import werkzeug.exceptions
+from flask import Flask, render_template, request, json, make_response
 import random
 import configparser
 from cryptography.fernet import Fernet
 import numpy as np
 import pickle
 from setup_logging import logger
+from werkzeug.exceptions import HTTPException
+
 
 app = Flask(__name__)
 secret_key = Fernet.generate_key()
@@ -244,6 +247,21 @@ def show_room(coordinates):
         200
     )
 
+
+@app.errorhandler(HTTPException)
+def handle_exception(e):
+    # start with the correct headers and status code from the error
+    response = e.get_response()
+    if e.code == 404:
+        return render_template("404.html")
+    # replace the body with JSON
+    response.data = json.dumps({
+        "code": e.code,
+        "name": e.name,
+        "description": e.description,
+    })
+    response.content_type = "application/json"
+    return response
 
 if __name__ == "__main__":
     config = configparser.ConfigParser()
