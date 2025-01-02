@@ -209,7 +209,11 @@ def start():
             logger.info("load button clicked")
             maze.load_maze()
             logger.info("load completed")
-    return render_template('start.html', hostname=request.host, maze=maze), 200
+    return render_template(
+        'start.html',
+        hostname=request.host,
+        maze=maze
+    ), 200
 
 
 '''
