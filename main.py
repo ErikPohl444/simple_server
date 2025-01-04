@@ -245,7 +245,7 @@ def show_room(coordinates):
             roomname=maze.rooms[x][y][z].room_name(True),
             exits=maze.rooms[x][y][z].all_exits(True)),
         200
-    )
+    )   
 
 
 @app.errorhandler(HTTPException)
