@@ -225,17 +225,6 @@ def start():
     ), 200
 
 
-'''
-    if request.method == "GET":
-        return render_template(
-            'start.html',
-            title_text=title,
-            hostname=request.host,
-            maze=maze
-        ), 200
-'''
-
-
 @app.route('/maze/<coordinates>')
 def show_room(coordinates):
     cipher = Fernet(secret_key)
@@ -254,7 +243,6 @@ def show_room(coordinates):
     )   
 
 
-'''
 @app.errorhandler(HTTPException)
 def handle_exception(e):
     # start with the correct headers and status code from the error
@@ -269,7 +257,7 @@ def handle_exception(e):
     })
     response.content_type = "application/json"
     return response
-'''
+
 
 if __name__ == "__main__":
     config = configparser.ConfigParser()
