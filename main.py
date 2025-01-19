@@ -107,30 +107,40 @@ class Maze:
                     or next_y < 0 or next_y >= maze.ybound
             ):
                 raise ValueError
-            elif maze.rooms[next_x][next_y][next_z] not in maze.frontier:
+            elif maze._rooms[next_x][next_y][next_z] not in maze._frontier:
                 raise ValueError
             else:
-                location = maze.rooms[next_x][next_y][next_z]
+                location = maze._rooms[next_x][next_y][next_z]
             self.exits[direction] = location
             opp_dir = self.dirs.opposite(direction)
             location.exits[opp_dir] = self
-            if self in maze.frontier:
-                maze.frontier.remove(self)
-            if location in maze.frontier:
-                maze.frontier.remove(location)
-            if self not in maze.claimed:
-                maze.claimed.append(self)
-            if location not in maze.claimed:
-                maze.claimed.append(location)
+            if self in maze._frontier:
+                maze._frontier.remove(self)
+            if location in maze._frontier:
+                maze._frontier.remove(location)
+            if self not in maze._claimed:
+                maze._claimed.append(self)
+            if location not in maze._claimed:
+                maze._claimed.append(location)
             return location
 
-    def __init__(self, name, file_name, x_start=0, y_start=0, z_start=0, xbound=8, ybound=8, zbound=8):
+    def __init__(
+            self,
+            name,
+            file_name,
+            x_start=0,
+            y_start=0,
+            z_start=0,
+            xbound=8,
+            ybound=8,
+            zbound=8
+    ):
         self.name = name
         self.maze_file = file_name
-        self.frontier, self.claimed = [], []
+        self._frontier, self._claimed = [], []
         self.x_start, self.y_start, self.z_start = x_start, y_start, z_start
         self.xbound, self.ybound, self.zbound = xbound, ybound, zbound
-        self.rooms = [
+        self._rooms = [
             [
                 [
                     self.Room(f"{x}_{y}_{z}")
@@ -138,37 +148,37 @@ class Maze:
                 ] for y in range(ybound)
             ] for x in range(xbound)
         ]
-        self.frontier = np.array(self.rooms).flatten().tolist()
-        self.start_url = Fernet(secret_key).encrypt(f'{x_start}_{y_start}_{z_start}'.encode()).decode("utf-8")
-        self.starting_place = None
-        self.destination = None
+        self._frontier = np.array(self._rooms).flatten().tolist()
+        self._start_url = Fernet(secret_key).encrypt(f'{x_start}_{y_start}_{z_start}'.encode()).decode("utf-8")
+        self._starting_place = None
+        self._destination = None
 
     def automatically_build(self):
         # rule: you can create an exit from a room with one or more exits in it
         #       but you cannot create an exit into a room with one or more exits into it
-        self.starting_place = self.rooms[self.x_start][self.y_start][self.z_start]
-        self.starting_place.is_start = True
-        self.claimed.append(self.starting_place)
-        self.destination = self.starting_place
-        while len(self.frontier) > 0:
+        self._starting_place = self._rooms[self.x_start][self.y_start][self.z_start]
+        self._starting_place.is_start = True
+        self._claimed.append(self._starting_place)
+        self._destination = self._starting_place
+        while len(self._frontier) > 0:
             try:
-                x, y, z = self.claimed[random.randint(0, len(self.claimed)-1)].coordinates()
+                x, y, z = self._claimed[random.randint(0, len(self._claimed) - 1)].coordinates()
                 dir = Directions.rose[random.randint(0, len(Directions.rose))]
-                self.destination = self.rooms[x][y][z].make_exit(direction=dir, maze=self)
+                self._destination = self._rooms[x][y][z].make_exit(direction=dir, maze=self)
             except (ValueError, IndexError):
                 pass
-        self.destination.is_finish = True
-        logger.info(f"maze constructed with this destination: {self.destination.name}")
+        self._destination.is_finish = True
+        logger.info(f"maze constructed with this destination: {self._destination.name}")
 
     def save_me(self):
         with open(self.maze_file, 'wb') as maze_handle:
-            pickle.dump(self.rooms, maze_handle)
+            pickle.dump(self._rooms, maze_handle)
 
     def load_maze(self):
         logger.info("loading maze")
         print("loading maze")
         with open(self.maze_file, 'rb') as maze_handle:
-            self.rooms = pickle.load(maze_handle)
+            self._rooms = pickle.load(maze_handle)
 
 
 '''
@@ -196,14 +206,9 @@ class Maze:
 @app.route('/start.html', methods=["GET", "POST"])
 def start():
     title = "Maze Start"
-    logger.info("showing start page")
     if request.method == "GET":
-        return render_template(
-            'start.html',
-            hostname=request.host,
-            maze=maze), 200
+        logger.info("GET method displays start page")
     if request.method == "POST":
-        print(request.form)
         if request.form['submit_button'] == "save_maze":
             logger.info("save button clicked")
             maze.save_me()
@@ -215,7 +220,8 @@ def start():
     return render_template(
         'start.html',
         hostname=request.host,
-        maze=maze
+        start_url=maze._start_url,
+        title_text=title
     ), 200
 
 
@@ -242,12 +248,13 @@ def show_room(coordinates):
             'room.html',
             title_text=title,
             hostname=request.host,
-            roomname=maze.rooms[x][y][z].room_name(True),
-            exits=maze.rooms[x][y][z].all_exits(True)),
+            roomname=maze._rooms[x][y][z].room_name(True),
+            exits=maze._rooms[x][y][z].all_exits(True)),
         200
     )   
 
 
+'''
 @app.errorhandler(HTTPException)
 def handle_exception(e):
     # start with the correct headers and status code from the error
@@ -262,6 +269,7 @@ def handle_exception(e):
     })
     response.content_type = "application/json"
     return response
+'''
 
 if __name__ == "__main__":
     config = configparser.ConfigParser()
