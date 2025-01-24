@@ -231,7 +231,7 @@ def show_room(coordinates):
     coordinates = cipher.decrypt(coordinates).decode()
     x, y, z = split_coordinates(coordinates)
     title = "Maze Room"
-    logger.info("showing room {x} {y} {z}")
+    logger.info(f"showing room {x} {y} {z}")
     return (
         render_template(
             'room.html',
