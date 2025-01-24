@@ -44,8 +44,8 @@ class Directions:
         lambda x, y, z: (x, y + 1, z)
     ]
 
-    def direction_move(self, dir, x, y, z):
-        return self.rose_funs[self.rose.index(dir)](x, y, z)
+    def direction_move(self, direction, x, y, z):
+        return self.rose_funs[self.rose.index(direction)](x, y, z)
 
     def opposite(self, direction):
         return self.rose[len(self.rose)-self.rose.index(direction)-1]
@@ -57,7 +57,7 @@ class Maze:
 
         def __init__(self, name):
             self.name = name
-            self.exits = dict([(dir, None) for dir in Directions.rose])
+            self.exits = dict([(direction, None) for direction in Directions.rose])
             self.is_finish = False
             self.is_start = False
             self.contents = []
@@ -163,8 +163,8 @@ class Maze:
         while len(self._frontier) > 0:
             try:
                 x, y, z = self._claimed[random.randint(0, len(self._claimed) - 1)].coordinates()
-                dir = Directions.rose[random.randint(0, len(Directions.rose))]
-                self._destination = self._rooms[x][y][z].make_exit(direction=dir, maze=self)
+                direction = Directions.rose[random.randint(0, len(Directions.rose))]
+                self._destination = self._rooms[x][y][z].make_exit(direction=direction, maze=self)
             except (ValueError, IndexError):
                 pass
         self._destination.is_finish = True
