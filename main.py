@@ -10,7 +10,6 @@ from werkzeug.exceptions import HTTPException
 
 
 app = Flask(__name__)
-secret_key = Fernet.generate_key()
 
 
 def split_coordinates(coord_string):
@@ -54,14 +53,15 @@ class Directions:
 class Maze:
     class Room:
 
-        def __init__(self, name, directions):
+        def __init__(self, name, directions, cipher):
             self.name = name
-            self.exits = dict([(direction, None) for direction in Directions.rose])
+            self.dirs = directions
+            self.exits = dict([(direction, None) for direction in self.dirs.rose])
+            self._cipher = cipher
             self.is_finish = False
             self.is_start = False
             self.contents = []
             self.x, self.y, self.z = split_coordinates(name)
-            self.dirs = directions
 
         def coordinates(self):
             return split_coordinates(self.name)
@@ -80,12 +80,12 @@ class Maze:
             exits = ''
             if in_html:
                 exits = '<ul class="list-group">'
-            for direction in Directions.rose:
+            for direction in self.dirs.rose:
                 if self.exits[direction]:
                     nextplace = self.exits[direction].name
                     exitstr = f"Exit to {direction} {nextplace}\n"
                     if in_html:
-                        nextplace_url = Fernet(secret_key).encrypt(nextplace.encode()).decode("utf-8")
+                        nextplace_url = self._cipher.encrypt(nextplace.encode()).decode("utf-8")
                         exitstr = (f'<li class="list-group-item">'
                                    f"Exit {direction} to room "
                                    f'<a href="http://{request.host}/maze/{nextplace_url}">'
@@ -97,7 +97,7 @@ class Maze:
             return exits
 
         def make_exit(self, direction, maze):
-            if direction not in Directions.rose:
+            if direction not in self.dirs.rose:
                 raise ValueError
             x, y, z = self.coordinates()
             next_x, next_y, next_z = self.dirs.direction_move(direction, x, y, z)
@@ -129,6 +129,7 @@ class Maze:
             name,
             file_name,
             directions,
+            cipher,
             x_start=0,
             y_start=0,
             z_start=0,
@@ -139,19 +140,20 @@ class Maze:
         self.name = name
         self.maze_file = file_name
         self._directions = directions
+        self._cipher = cipher
         self._frontier, self._claimed = [], []
         self.x_start, self.y_start, self.z_start = x_start, y_start, z_start
         self.xbound, self.ybound, self.zbound = xbound, ybound, zbound
         self._rooms = [
             [
                 [
-                    self.Room(f"{x}_{y}_{z}", self._directions)
+                    self.Room(f"{x}_{y}_{z}", self._directions, self._cipher)
                     for z in range(zbound)
                 ] for y in range(ybound)
             ] for x in range(xbound)
         ]
         self._frontier = np.array(self._rooms).flatten().tolist()
-        self._start_url = Fernet(secret_key).encrypt(f'{x_start}_{y_start}_{z_start}'.encode()).decode("utf-8")
+        self._start_url = cipher.encrypt(f'{x_start}_{y_start}_{z_start}'.encode()).decode("utf-8")
         self._starting_place = None
         self._destination = None
 
@@ -260,14 +262,27 @@ def handle_exception(e):
     response.content_type = "application/json"
     return response
 
+class FernetCipher:
+    def __init__(self, key):
+        self.cipher = Fernet(key)
+
+    def encrypt(self, data):
+        return self.cipher.encrypt(data)
+
+    def decrypt(self, data):
+        return self.cipher.decrypt(data)
 
 if __name__ == "__main__":
     config = configparser.ConfigParser()
     config.read("maze.ini")
+    secret_key = Fernet.generate_key()
+
+    cipher = FernetCipher(secret_key)
     directions = Directions()
+
     maze_name, maze_file = config["DEFAULT"]["MazeName"], config["DEFAULT"]["MazeFile"]
     x_start, y_start, z_start = [int(config["DEFAULT"][f"{v}_start"]) for v in ["x", "y", "z"]]
     xbound, ybound, zbound = [int(config["DEFAULT"][f"{v}bound"]) for v in ["x", "y", "z"]]
-    maze = Maze(maze_name, maze_file, directions, x_start, y_start, z_start, xbound, ybound, zbound)
+    maze = Maze(maze_name, maze_file, directions, cipher, x_start, y_start, z_start, xbound, ybound, zbound)
     maze.automatically_build()
     app.run(host='0.0.0.0', port=8080, debug=False)
