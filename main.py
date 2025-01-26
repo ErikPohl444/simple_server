@@ -53,15 +53,15 @@ class Directions:
 
 class Maze:
     class Room:
-        dirs = Directions()
 
-        def __init__(self, name):
+        def __init__(self, name, directions):
             self.name = name
             self.exits = dict([(direction, None) for direction in Directions.rose])
             self.is_finish = False
             self.is_start = False
             self.contents = []
             self.x, self.y, self.z = split_coordinates(name)
+            self.dirs = directions
 
         def coordinates(self):
             return split_coordinates(self.name)
@@ -128,6 +128,7 @@ class Maze:
             self,
             name,
             file_name,
+            directions,
             x_start=0,
             y_start=0,
             z_start=0,
@@ -137,13 +138,14 @@ class Maze:
     ):
         self.name = name
         self.maze_file = file_name
+        self._directions = directions
         self._frontier, self._claimed = [], []
         self.x_start, self.y_start, self.z_start = x_start, y_start, z_start
         self.xbound, self.ybound, self.zbound = xbound, ybound, zbound
         self._rooms = [
             [
                 [
-                    self.Room(f"{x}_{y}_{z}")
+                    self.Room(f"{x}_{y}_{z}", self._directions)
                     for z in range(zbound)
                 ] for y in range(ybound)
             ] for x in range(xbound)
@@ -262,9 +264,10 @@ def handle_exception(e):
 if __name__ == "__main__":
     config = configparser.ConfigParser()
     config.read("maze.ini")
+    directions = Directions()
     maze_name, maze_file = config["DEFAULT"]["MazeName"], config["DEFAULT"]["MazeFile"]
     x_start, y_start, z_start = [int(config["DEFAULT"][f"{v}_start"]) for v in ["x", "y", "z"]]
     xbound, ybound, zbound = [int(config["DEFAULT"][f"{v}bound"]) for v in ["x", "y", "z"]]
-    maze = Maze(maze_name, maze_file, x_start, y_start, z_start, xbound, ybound, zbound)
+    maze = Maze(maze_name, maze_file, directions, x_start, y_start, z_start, xbound, ybound, zbound)
     maze.automatically_build()
     app.run(host='0.0.0.0', port=8080, debug=False)
