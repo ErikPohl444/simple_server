@@ -1,5 +1,4 @@
-import werkzeug.exceptions
-from flask import Flask, render_template, request, json, make_response
+from flask import Flask, render_template, request, json
 import random
 import configparser
 from cryptography.fernet import Fernet
@@ -262,6 +261,7 @@ def handle_exception(e):
     response.content_type = "application/json"
     return response
 
+
 class FernetCipher:
     def __init__(self, key):
         self.cipher = Fernet(key)
@@ -272,17 +272,29 @@ class FernetCipher:
     def decrypt(self, data):
         return self.cipher.decrypt(data)
 
+
 if __name__ == "__main__":
     config = configparser.ConfigParser()
     config.read("maze.ini")
+
     secret_key = Fernet.generate_key()
+    fernet_cipher = FernetCipher(secret_key)
+    these_directions = Directions()
 
-    cipher = FernetCipher(secret_key)
-    directions = Directions()
-
-    maze_name, maze_file = config["DEFAULT"]["MazeName"], config["DEFAULT"]["MazeFile"]
+    maze_name, maze_file_name = config["DEFAULT"]["MazeName"], config["DEFAULT"]["MazeFile"]
     x_start, y_start, z_start = [int(config["DEFAULT"][f"{v}_start"]) for v in ["x", "y", "z"]]
     xbound, ybound, zbound = [int(config["DEFAULT"][f"{v}bound"]) for v in ["x", "y", "z"]]
-    maze = Maze(maze_name, maze_file, directions, cipher, x_start, y_start, z_start, xbound, ybound, zbound)
+    maze = Maze(
+        maze_name,
+        maze_file_name,
+        these_directions,
+        fernet_cipher,
+        x_start,
+        y_start,
+        z_start,
+        xbound,
+        ybound,
+        zbound
+    )
     maze.automatically_build()
     app.run(host='0.0.0.0', port=8080, debug=False)
