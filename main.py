@@ -95,32 +95,32 @@ class Maze:
                 exits += "</ul>"
             return exits
 
-        def make_exit(self, direction, maze):
+        def make_exit(self, direction, parent_maze):
             if direction not in self.dirs.rose:
                 raise ValueError
             x, y, z = self.coordinates()
             next_x, next_y, next_z = self.dirs.direction_move(direction, x, y, z)
             if (
-                    next_x < 0 or next_x >= maze.xbound
-                    or next_z < 0 or next_z >= maze.zbound
-                    or next_y < 0 or next_y >= maze.ybound
+                    next_x < 0 or next_x >= parent_maze.xbound
+                    or next_z < 0 or next_z >= parent_maze.zbound
+                    or next_y < 0 or next_y >= parent_maze.ybound
             ):
                 raise ValueError
-            elif not maze.is_frontier_coordinates(next_x, next_y, next_z):
+            elif not parent_maze.is_frontier_coordinates(next_x, next_y, next_z):
                 raise ValueError
             else:
-                location = maze.get_room(next_x, next_y, next_z)
+                location = parent_maze.get_room(next_x, next_y, next_z)
             self.exits[direction] = location
             opp_dir = self.dirs.opposite(direction)
             location.exits[opp_dir] = self
-            if maze.room_is_frontier(self):
-                maze.remove_frontier_room(self)
-            if maze.room_is_frontier(location):
-                maze.remove_frontier_room(location)
-            if not maze.room_is_claimed(self):
-                maze.add_claimed_room(self)
-            if not maze.room_is_claimed(location):
-                maze.add_claimed_room(location)
+            if parent_maze.room_is_frontier(self):
+                parent_maze.remove_frontier_room(self)
+            if parent_maze.room_is_frontier(location):
+                parent_maze.remove_frontier_room(location)
+            if not parent_maze.room_is_claimed(self):
+                parent_maze.add_claimed_room(self)
+            if not parent_maze.room_is_claimed(location):
+                parent_maze.add_claimed_room(location)
             return location
 
     def __init__(
@@ -167,7 +167,7 @@ class Maze:
             try:
                 x, y, z = self._claimed[random.randint(0, len(self._claimed) - 1)].coordinates()
                 direction = Directions.rose[random.randint(0, len(Directions.rose))]
-                self._destination = self._rooms[x][y][z].make_exit(direction=direction, maze=self)
+                self._destination = self._rooms[x][y][z].make_exit(direction=direction, parent_maze=self)
             except (ValueError, IndexError):
                 pass
         self._destination.is_finish = True
@@ -300,19 +300,19 @@ if __name__ == "__main__":
     these_directions = Directions()
 
     maze_name, maze_file_name = config["DEFAULT"]["MazeName"], config["DEFAULT"]["MazeFile"]
-    x_start, y_start, z_start = [int(config["DEFAULT"][f"{v}_start"]) for v in ["x", "y", "z"]]
-    xbound, ybound, zbound = [int(config["DEFAULT"][f"{v}bound"]) for v in ["x", "y", "z"]]
+    default_x_start, default_y_start, default_z_start = [int(config["DEFAULT"][f"{v}_start"]) for v in ["x", "y", "z"]]
+    default_xbound, default_ybound, default_zbound = [int(config["DEFAULT"][f"{v}bound"]) for v in ["x", "y", "z"]]
     maze = Maze(
         maze_name,
         maze_file_name,
         these_directions,
         fernet_cipher,
-        x_start,
-        y_start,
-        z_start,
-        xbound,
-        ybound,
-        zbound
+        default_x_start,
+        default_y_start,
+        default_z_start,
+        default_xbound,
+        default_ybound,
+        default_zbound
     )
     maze.automatically_build()
     app.run(host='0.0.0.0', port=8080, debug=False)
