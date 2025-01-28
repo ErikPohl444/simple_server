@@ -106,21 +106,21 @@ class Maze:
                     or next_y < 0 or next_y >= maze.ybound
             ):
                 raise ValueError
-            elif maze._rooms[next_x][next_y][next_z] not in maze._frontier:
+            elif not maze.is_frontier_coordinates(next_x, next_y, next_z):
                 raise ValueError
             else:
-                location = maze._rooms[next_x][next_y][next_z]
+                location = maze.get_room(next_x, next_y, next_z)
             self.exits[direction] = location
             opp_dir = self.dirs.opposite(direction)
             location.exits[opp_dir] = self
-            if self in maze._frontier:
-                maze._frontier.remove(self)
-            if location in maze._frontier:
-                maze._frontier.remove(location)
-            if self not in maze._claimed:
-                maze._claimed.append(self)
-            if location not in maze._claimed:
-                maze._claimed.append(location)
+            if maze.room_is_frontier(self):
+                maze.remove_frontier_room(self)
+            if maze.room_is_frontier(location):
+                maze.remove_frontier_room(location)
+            if not maze.room_is_claimed(self):
+                maze.add_claimed_room(self)
+            if not maze.room_is_claimed(location):
+                maze.add_claimed_room(location)
             return location
 
     def __init__(
@@ -183,6 +183,24 @@ class Maze:
         with open(self.maze_file, 'rb') as maze_handle:
             self._rooms = pickle.load(maze_handle)
 
+    def is_frontier_coordinates(self, x, y, z):
+        return self._rooms[x][y][z] in self._frontier
+
+    def room_is_frontier(self, room_object):
+        return room_object in self._frontier
+
+    def room_is_claimed(self, room_object):
+        return room_object in self._claimed
+
+    def get_room(self, x, y, z):
+        return self._rooms[x][y][z]
+
+    def add_claimed_room(self, room_object):
+        return self._claimed.append(room_object)
+
+    def remove_frontier_room(self, room_object):
+        return self._frontier.remove(room_object)
+
 
 '''
     def solve_maze(self):
@@ -240,8 +258,8 @@ def show_room(coordinates):
             'room.html',
             title_text=title,
             hostname=request.host,
-            roomname=maze._rooms[x][y][z].room_name(True),
-            exits=maze._rooms[x][y][z].all_exits(True)),
+            roomname=maze.get_room(x, y, z).room_name(True),
+            exits=maze.get_room(x, y, z).all_exits(True)),
         200
     )   
 
