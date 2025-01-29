@@ -16,7 +16,7 @@ def split_coordinates(coord_string):
 
 
 class Directions:
-    rose = [
+    compass_rose = [
         "north",
         "east",
         "southeast",
@@ -29,7 +29,7 @@ class Directions:
         "south"
     ]
 
-    rose_funs = [
+    rose_funcs = [
         lambda x, y, z: (x, y - 1, z),
         lambda x, y, z: (x - 1, y, z),
         lambda x, y, z: (x + 1, y+1, z),
@@ -42,11 +42,11 @@ class Directions:
         lambda x, y, z: (x, y + 1, z)
     ]
 
-    def direction_move(self, direction, x, y, z):
-        return self.rose_funs[self.rose.index(direction)](x, y, z)
+    def calculate_direction_move(self, direction, x, y, z):
+        return self.rose_funcs[self.compass_rose.index(direction)](x, y, z)
 
-    def opposite(self, direction):
-        return self.rose[len(self.rose)-self.rose.index(direction)-1]
+    def get_opposite_direction(self, direction):
+        return self.compass_rose[len(self.compass_rose) - self.compass_rose.index(direction) - 1]
 
 
 class Room:
@@ -54,17 +54,17 @@ class Room:
     def __init__(self, name, directions, cipher):
         self.name = name
         self.dirs = directions
-        self.exits = dict([(direction, None) for direction in self.dirs.rose])
+        self.exits = dict([(direction, None) for direction in self.dirs.compass_rose])
         self._cipher = cipher
         self.is_finish = False
         self.is_start = False
         self.contents = []
         self.x, self.y, self.z = split_coordinates(name)
 
-    def coordinates(self):
+    def get_room_coordinates(self):
         return split_coordinates(self.name)
 
-    def room_name(self, in_html):
+    def get_formatted_room_name(self, in_html):
         room_name = f"Room {self.name}"
         if self.is_start:
             room_name += ": START OF MAZE"
@@ -80,11 +80,11 @@ class Room:
     def get_raw_exits(self):
         return self.exits
 
-    def all_exits(self, in_html):
+    def get_formatted_exits(self, in_html):
         exits = ''
         if in_html:
             exits = '<ul class="list-group">'
-        for direction in self.dirs.rose:
+        for direction in self.dirs.compass_rose:
             if self.exits[direction]:
                 nextplace = self.exits[direction].name
                 exitstr = f"Exit to {direction} {nextplace}\n"
@@ -136,7 +136,7 @@ class Maze:
         self._starting_place = None
         self._destination = None
 
-    def automatically_build(self):
+    def build_maze_automatically(self):
         # rule: you can create an exit from a room with one or more exits in it
         #       but you cannot create an exit into a room with one or more exits into it
         self._starting_place = self._rooms[self.x_start][self.y_start][self.z_start]
@@ -146,15 +146,15 @@ class Maze:
         while len(self._frontier) > 0:
             try:
                 try_room = self._claimed[random.randint(0, len(self._claimed) - 1)]
-                x, y, z = try_room.coordinates()
-                direction = Directions.rose[random.randint(0, len(Directions.rose))]
+                x, y, z = try_room.get_room_coordinates()
+                direction = Directions.compass_rose[random.randint(0, len(Directions.compass_rose))]
                 self._destination = self.make_exit(x, y, z, direction=direction)
             except (ValueError, IndexError):
                 pass
         self._destination.is_finish = True
         logger.info(f"maze constructed with this destination: {self._destination.name}")
 
-    def save_me(self):
+    def save_maze(self):
         with open(self.maze_file, 'wb') as maze_handle:
             pickle.dump(self._rooms, maze_handle)
 
@@ -183,9 +183,9 @@ class Maze:
         return self._frontier.remove(room_object)
 
     def make_exit(self,  x, y, z, direction):
-        if direction not in self._directions.rose:
+        if direction not in self._directions.compass_rose:
             raise ValueError
-        next_x, next_y, next_z = self._directions.direction_move(direction, x, y, z)
+        next_x, next_y, next_z = self._directions.calculate_direction_move(direction, x, y, z)
         if (
                 next_x < 0 or next_x >= self.xbound
                 or next_z < 0 or next_z >= self.zbound
@@ -198,7 +198,7 @@ class Maze:
             location = self.get_room(next_x, next_y, next_z)
         current_room = self.get_room(x, y, z)
         current_room.add_exit(direction, location)
-        opp_dir = self._directions.opposite(direction)
+        opp_dir = self._directions.get_opposite_direction(direction)
         location.add_exit(opp_dir, current_room)
         if self.room_is_frontier(current_room):
             self.remove_frontier_room(current_room)
@@ -241,7 +241,7 @@ def start():
     if request.method == "POST":
         if request.form['submit_button'] == "save_maze":
             logger.info("save button clicked")
-            maze.save_me()
+            maze.save_maze()
             logger.info("save completed")
         if request.form['submit_button'] == "load_maze":
             logger.info("load button clicked")
@@ -267,8 +267,8 @@ def show_room(coordinates):
             'room.html',
             title_text=title,
             hostname=request.host,
-            roomname=maze.get_room(x, y, z).room_name(True),
-            exits=maze.get_room(x, y, z).all_exits(True)),
+            roomname=maze.get_room(x, y, z).get_formatted_room_name(True),
+            exits=maze.get_room(x, y, z).get_formatted_exits(True)),
         200
     )   
 
@@ -323,5 +323,5 @@ if __name__ == "__main__":
         default_ybound,
         default_zbound
     )
-    maze.automatically_build()
+    maze.build_maze_automatically()
     app.run(host='0.0.0.0', port=8080, debug=False)
