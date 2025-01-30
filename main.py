@@ -177,10 +177,16 @@ class Maze:
         return self._rooms[x][y][z]
 
     def add_claimed_room(self, room_object):
-        return self._claimed.append(room_object)
+        if not self.room_is_claimed(room_object):
+            return self._claimed.append(room_object)
+        else:
+            return False
 
     def remove_frontier_room(self, room_object):
-        return self._frontier.remove(room_object)
+        if self.room_is_frontier(room_object):
+            return self._frontier.remove(room_object)
+        else:
+            return False
 
     def make_exit(self,  x, y, z, direction):
         if direction not in self._directions.compass_rose:
@@ -200,14 +206,10 @@ class Maze:
         current_room.add_exit(direction, location)
         opp_dir = self._directions.get_opposite_direction(direction)
         location.add_exit(opp_dir, current_room)
-        if self.room_is_frontier(current_room):
-            self.remove_frontier_room(current_room)
-        if self.room_is_frontier(location):
-            self.remove_frontier_room(location)
-        if not self.room_is_claimed(current_room):
-            self.add_claimed_room(current_room)
-        if not self.room_is_claimed(location):
-            self.add_claimed_room(location)
+        self.remove_frontier_room(current_room)
+        self.remove_frontier_room(location)
+        self.add_claimed_room(current_room)
+        self.add_claimed_room(location)
         return location
 
 
