@@ -6,6 +6,7 @@ import numpy as np
 import pickle
 from setup_logging import logger
 from werkzeug.exceptions import HTTPException
+from abc import ABC, abstractmethod
 
 
 app = Flask(__name__)
@@ -145,9 +146,14 @@ class Maze:
         self._destination = self._starting_place
         while len(self._frontier) > 0:
             try:
-                try_room = self._claimed[random.randint(0, len(self._claimed) - 1)]
-                x, y, z = try_room.get_room_coordinates()
-                direction = Directions.compass_rose[random.randint(0, len(Directions.compass_rose))]
+                try_this_room = self._claimed[random.randint(0, len(self._claimed) - 1)]
+                x, y, z = try_this_room.get_room_coordinates()
+                direction = Directions.compass_rose[
+                    random.randint(
+                        0,
+                        len(Directions.compass_rose)
+                    )
+                ]
                 self._destination = self.make_exit(x, y, z, direction=direction)
             except (ValueError, IndexError):
                 pass
@@ -291,7 +297,17 @@ def handle_exception(e):
     return response
 
 
-class FernetCipher:
+class Cipher(ABC):
+    @abstractmethod
+    def encrypt(self, data):
+        pass
+
+    @abstractmethod
+    def decrypt(self, data):
+        pass
+
+
+class FernetCipher(Cipher):
     def __init__(self, key):
         self.cipher = Fernet(key)
 
