@@ -7,7 +7,7 @@ import pickle
 from setup_logging import logger
 from werkzeug.exceptions import HTTPException
 from abc import ABC, abstractmethod
-
+import pathlib
 
 app = Flask(__name__)
 
@@ -320,7 +320,7 @@ class FernetCipher(Cipher):
 
 if __name__ == "__main__":
     config = configparser.ConfigParser()
-    config.read("maze.ini")
+    config.read(pathlib.Path(__file__).parent.parent / "config" / "maze.ini")
 
     secret_key = Fernet.generate_key()
     fernet_cipher = FernetCipher(secret_key)
