@@ -319,13 +319,6 @@ class FernetCipher(Cipher):
 
 
 if __name__ == "__main__":
-    import time
-    for i in range(10):
-        logger.debug(f"This is a debug message {i}")
-        logger.info(f"This is an info message {i}")
-        logger.warning(f"This is a warning message {i}")
-        time.sleep(10)
-
     config = configparser.ConfigParser()
     config.read("maze.ini")
 
