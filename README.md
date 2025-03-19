@@ -4,11 +4,11 @@ Generates a maze in an N x N x N cube of rooms and allows a user to navigate thr
 
 ## Future plans
 
-- [ ] 
+- [ ] See issue log.
 
 ## Important disclaimer
 
-If any
+TBD
 
 
 ## Getting Started
