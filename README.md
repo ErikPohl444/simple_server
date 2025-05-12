@@ -1,5 +1,3 @@
-Here’s a refined and polished version of the `README.md` file for your repository:
-
 ```markdown
 # simple_server
 
@@ -68,5 +66,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE.md) f
 ## Acknowledgments
 - Thanks to everyone who has motivated me to learn more.
 ```
-
-You can copy and paste this into your `README.md` file. Let me know if you'd like further refinements!
