@@ -1,4 +1,3 @@
-```markdown
 # simple_server
 
 Generates a maze in an N x N x N cube of rooms and allows a user to navigate through the maze.
