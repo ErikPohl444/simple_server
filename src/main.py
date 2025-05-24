@@ -12,8 +12,29 @@ import pathlib
 app = Flask(__name__)
 
 
-def split_coordinates(coord_string):
+def split_coordinates(coord_string: str) -> list[int]:
     return [int(axis) for axis in coord_string.split('_')]
+
+
+class Cipher(ABC):
+    @abstractmethod
+    def encrypt(self, data):
+        pass
+
+    @abstractmethod
+    def decrypt(self, data):
+        pass
+
+
+class FernetCipher(Cipher):
+    def __init__(self, key):
+        self.cipher = Fernet(key)
+
+    def encrypt(self, data):
+        return self.cipher.encrypt(data)
+
+    def decrypt(self, data):
+        return self.cipher.decrypt(data)
 
 
 class Directions:
@@ -43,23 +64,23 @@ class Directions:
         lambda x, y, z: (x, y + 1, z)
     ]
 
-    def calculate_direction_move(self, direction, x, y, z):
+    def calculate_direction_move(self, direction: str, x: int, y: int, z: int):
         return self.rose_funcs[self.compass_rose.index(direction)](x, y, z)
 
-    def get_opposite_direction(self, direction):
+    def get_opposite_direction(self, direction: str):
         return self.compass_rose[len(self.compass_rose) - self.compass_rose.index(direction) - 1]
 
 
 class Room:
 
-    def __init__(self, name, directions, cipher):
-        self.name = name
-        self.dirs = directions
-        self.exits = dict([(direction, None) for direction in self.dirs.compass_rose])
-        self._cipher = cipher
-        self.is_finish = False
-        self.is_start = False
-        self.contents = []
+    def __init__(self, name: str, directions: Directions, cipher: FernetCipher):
+        self.name: str = name
+        self.dirs: Directions = directions
+        self.exits: dict = dict([(direction, None) for direction in self.dirs.compass_rose])
+        self._cipher: FernetCipher = cipher
+        self.is_finish: bool = False
+        self.is_start: bool = False
+        self.contents: list[int] = []
         self.x, self.y, self.z = split_coordinates(name)
 
     def get_room_coordinates(self):
@@ -106,21 +127,21 @@ class Maze:
 
     def __init__(
             self,
-            name,
-            file_name,
-            directions,
-            cipher,
-            x_start=0,
-            y_start=0,
-            z_start=0,
-            xbound=8,
-            ybound=8,
-            zbound=8
+            name: str,
+            file_name: str,
+            directions: Directions,
+            cipher: FernetCipher,
+            x_start: int = 0,
+            y_start: int = 0,
+            z_start: int = 0,
+            xbound: int = 8,
+            ybound: int = 8,
+            zbound: int = 8
     ):
-        self.name = name
-        self.maze_file = file_name
-        self._directions = directions
-        self._cipher = cipher
+        self.name: str = name
+        self.maze_file: str = file_name
+        self._directions: Directions = directions
+        self._cipher: FernetCipher = cipher
         self._frontier, self._claimed = [], []
         self.x_start, self.y_start, self.z_start = x_start, y_start, z_start
         self.xbound, self.ybound, self.zbound = xbound, ybound, zbound
@@ -170,31 +191,31 @@ class Maze:
         with open(self.maze_file, 'rb') as maze_handle:
             self._rooms = pickle.load(maze_handle)
 
-    def is_frontier_coordinates(self, x, y, z):
+    def is_frontier_coordinates(self, x: int, y: int, z: int):
         return self._rooms[x][y][z] in self._frontier
 
-    def room_is_frontier(self, room_object):
+    def room_is_frontier(self, room_object: Room):
         return room_object in self._frontier
 
-    def room_is_claimed(self, room_object):
+    def room_is_claimed(self, room_object: Room):
         return room_object in self._claimed
 
-    def get_room(self, x, y, z):
+    def get_room(self, x: int, y: int, z: int):
         return self._rooms[x][y][z]
 
-    def add_claimed_room(self, room_object):
+    def add_claimed_room(self, room_object: Room):
         if not self.room_is_claimed(room_object):
             return self._claimed.append(room_object)
         else:
             return False
 
-    def remove_frontier_room(self, room_object):
+    def remove_frontier_room(self, room_object: Room):
         if self.room_is_frontier(room_object):
             return self._frontier.remove(room_object)
         else:
             return False
 
-    def make_exit(self,  x, y, z, direction):
+    def make_exit(self,  x: int, y: int, z: int, direction: str):
         if direction not in self._directions.compass_rose:
             raise ValueError
         next_x, next_y, next_z = self._directions.calculate_direction_move(direction, x, y, z)
@@ -264,7 +285,7 @@ def start():
 
 
 @app.route('/maze/<coordinates>')
-def show_room(coordinates):
+def show_room(coordinates: list[int]):
     cipher = Fernet(secret_key)
     coordinates = cipher.decrypt(coordinates).decode()
     x, y, z = split_coordinates(coordinates)
@@ -295,27 +316,6 @@ def handle_exception(e):
     })
     response.content_type = "application/json"
     return response
-
-
-class Cipher(ABC):
-    @abstractmethod
-    def encrypt(self, data):
-        pass
-
-    @abstractmethod
-    def decrypt(self, data):
-        pass
-
-
-class FernetCipher(Cipher):
-    def __init__(self, key):
-        self.cipher = Fernet(key)
-
-    def encrypt(self, data):
-        return self.cipher.encrypt(data)
-
-    def decrypt(self, data):
-        return self.cipher.decrypt(data)
 
 
 if __name__ == "__main__":
