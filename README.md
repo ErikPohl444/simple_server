@@ -2,6 +2,10 @@
 
 Generates a maze in an N x N x N cube of rooms and allows a user to navigate through the maze.
 
+* Uses a cypher for room URLs to prevent cheating [manual editing of URLs to get to places in the maze without navigating to them].
+* Guarantees only one solution to the maze from start point to end point
+* Save and load mazes
+
 ## Table of Contents
 - [Future Plans](#future-plans)
 - [Disclaimer](#disclaimer)
