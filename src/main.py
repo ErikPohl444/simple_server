@@ -8,6 +8,7 @@ from setup_logging import logger
 from werkzeug.exceptions import HTTPException
 from abc import ABC, abstractmethod
 import pathlib
+from typing import Tuple
 
 app = Flask(__name__)
 
@@ -18,22 +19,22 @@ def split_coordinates(coord_string: str) -> list[int]:
 
 class Cipher(ABC):
     @abstractmethod
-    def encrypt(self, data):
+    def encrypt(self, data: str):
         pass
 
     @abstractmethod
-    def decrypt(self, data):
+    def decrypt(self, data: str):
         pass
 
 
 class FernetCipher(Cipher):
-    def __init__(self, key):
+    def __init__(self, key: bytes):
         self.cipher = Fernet(key)
 
-    def encrypt(self, data):
+    def encrypt(self, data: bytes):
         return self.cipher.encrypt(data)
 
-    def decrypt(self, data):
+    def decrypt(self, data: str):
         return self.cipher.decrypt(data)
 
 
@@ -64,11 +65,14 @@ class Directions:
         lambda x, y, z: (x, y + 1, z)
     ]
 
-    def calculate_direction_move(self, direction: str, x: int, y: int, z: int):
+    def calculate_direction_move(self, direction: str, x: int, y: int, z: int) -> Tuple[int, int, int]:
         return self.rose_funcs[self.compass_rose.index(direction)](x, y, z)
 
-    def get_opposite_direction(self, direction: str):
+    def get_opposite_direction(self, direction: str) -> str:
         return self.compass_rose[len(self.compass_rose) - self.compass_rose.index(direction) - 1]
+
+    def __init__(self):
+        pass
 
 
 class Room:
@@ -76,17 +80,17 @@ class Room:
     def __init__(self, name: str, directions: Directions, cipher: FernetCipher):
         self.name: str = name
         self.dirs: Directions = directions
-        self.exits: dict = dict([(direction, None) for direction in self.dirs.compass_rose])
+        self.exits = dict([(direction, None) for direction in self.dirs.compass_rose])
         self._cipher: FernetCipher = cipher
-        self.is_finish: bool = False
-        self.is_start: bool = False
+        self.is_finish = False
+        self.is_start = False
         self.contents: list[int] = []
         self.x, self.y, self.z = split_coordinates(name)
 
-    def get_room_coordinates(self):
+    def get_room_coordinates(self) -> list[int]:
         return split_coordinates(self.name)
 
-    def get_formatted_room_name(self, in_html):
+    def get_formatted_room_name(self, in_html: bool) -> str:
         room_name = f"Room {self.name}"
         if self.is_start:
             room_name += ": START OF MAZE"
@@ -96,13 +100,13 @@ class Room:
             return f"<h1>{room_name}</h1>"
         return room_name
 
-    def add_exit(self, direction, place):
+    def add_exit(self, direction: str, place: 'Room') -> None:
         self.exits[direction] = place
 
-    def get_raw_exits(self):
+    def get_raw_exits(self) -> dict[str, None]:
         return self.exits
 
-    def get_formatted_exits(self, in_html):
+    def get_formatted_exits(self, in_html: bool) -> str:
         exits = ''
         if in_html:
             exits = '<ul class="list-group">'
@@ -158,7 +162,7 @@ class Maze:
         self._starting_place = None
         self._destination = None
 
-    def build_maze_automatically(self):
+    def build_maze_automatically(self) -> None:
         # rule: you can create an exit from a room with one or more exits in it
         #       but you cannot create an exit into a room with one or more exits into it
         self._starting_place = self._rooms[self.x_start][self.y_start][self.z_start]
@@ -181,41 +185,41 @@ class Maze:
         self._destination.is_finish = True
         logger.info(f"maze constructed with this destination: {self._destination.name}")
 
-    def save_maze(self):
+    def save_maze(self) -> None:
         with open(self.maze_file, 'wb') as maze_handle:
             pickle.dump(self._rooms, maze_handle)
 
-    def load_maze(self):
+    def load_maze(self) -> None:
         logger.info("loading maze")
         print("loading maze")
         with open(self.maze_file, 'rb') as maze_handle:
             self._rooms = pickle.load(maze_handle)
 
-    def is_frontier_coordinates(self, x: int, y: int, z: int):
+    def is_frontier_coordinates(self, x: int, y: int, z: int) -> bool:
         return self._rooms[x][y][z] in self._frontier
 
-    def room_is_frontier(self, room_object: Room):
+    def room_is_frontier(self, room_object: Room) -> bool:
         return room_object in self._frontier
 
-    def room_is_claimed(self, room_object: Room):
+    def room_is_claimed(self, room_object: Room) -> bool:
         return room_object in self._claimed
 
-    def get_room(self, x: int, y: int, z: int):
+    def get_room(self, x: int, y: int, z: int) -> Room:
         return self._rooms[x][y][z]
 
-    def add_claimed_room(self, room_object: Room):
+    def add_claimed_room(self, room_object: Room) -> bool | None:
         if not self.room_is_claimed(room_object):
             return self._claimed.append(room_object)
         else:
             return False
 
-    def remove_frontier_room(self, room_object: Room):
+    def remove_frontier_room(self, room_object: Room) -> bool:
         if self.room_is_frontier(room_object):
             return self._frontier.remove(room_object)
         else:
             return False
 
-    def make_exit(self,  x: int, y: int, z: int, direction: str):
+    def make_exit(self,  x: int, y: int, z: int, direction: str) -> Room:
         if direction not in self._directions.compass_rose:
             raise ValueError
         next_x, next_y, next_z = self._directions.calculate_direction_move(direction, x, y, z)
@@ -263,7 +267,7 @@ class Maze:
 
 @app.route('/', methods=["GET", "POST"])
 @app.route('/start.html', methods=["GET", "POST"])
-def start():
+def start() -> Tuple[str, int]:
     title = "Maze Start"
     if request.method == "GET":
         logger.info("GET method displays start page")
@@ -285,7 +289,7 @@ def start():
 
 
 @app.route('/maze/<coordinates>')
-def show_room(coordinates: list[int]):
+def show_room(coordinates: bytes | str) -> Tuple[str, int]:
     cipher = Fernet(secret_key)
     coordinates = cipher.decrypt(coordinates).decode()
     x, y, z = split_coordinates(coordinates)
@@ -303,7 +307,7 @@ def show_room(coordinates: list[int]):
 
 
 @app.errorhandler(HTTPException)
-def handle_exception(e):
+def handle_exception(e) -> str:
     # start with the correct headers and status code from the error
     response = e.get_response()
     if e.code == 404:
