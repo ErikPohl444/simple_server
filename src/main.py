@@ -28,8 +28,9 @@ class Cipher(ABC):
 
 
 class FernetCipher(Cipher):
-    def __init__(self, key: bytes):
+    def __init__(self, key: bytes, fernet_cipher_logger: logger):
         self.cipher = Fernet(key)
+        self._fernet_cipher_logger = logger
 
     def encrypt(self, data: bytes):
         return self.cipher.encrypt(data)
@@ -71,13 +72,13 @@ class Directions:
     def get_opposite_direction(self, direction: str) -> str:
         return self.compass_rose[len(self.compass_rose) - self.compass_rose.index(direction) - 1]
 
-    def __init__(self):
-        pass
+    def __init__(self, directions_logger: logger):
+        self._directions_logger = directions_logger
 
 
 class Room:
 
-    def __init__(self, name: str, directions: Directions, cipher: FernetCipher):
+    def __init__(self, name: str, directions: Directions, cipher: FernetCipher, room_logger: logger):
         self.name: str = name
         self.dirs: Directions = directions
         self.exits = dict([(direction, None) for direction in self.dirs.compass_rose])
@@ -86,6 +87,7 @@ class Room:
         self.is_start = False
         self.contents: list[int] = []
         self.x, self.y, self.z = split_coordinates(name)
+        self._room_logger = logger
 
     def get_room_coordinates(self) -> list[int]:
         return split_coordinates(self.name)
@@ -135,6 +137,7 @@ class Maze:
             file_name: str,
             directions: Directions,
             cipher: FernetCipher,
+            maze_logger: logger,
             x_start: int = 0,
             y_start: int = 0,
             z_start: int = 0,
@@ -161,6 +164,7 @@ class Maze:
         self._start_url = cipher.encrypt(f'{x_start}_{y_start}_{z_start}'.encode()).decode("utf-8")
         self._starting_place = None
         self._destination = None
+        self._maze_logger = maze_logger
 
     def build_maze_automatically(self) -> None:
         # rule: you can create an exit from a room with one or more exits in it
@@ -325,10 +329,10 @@ def handle_exception(e) -> str:
 if __name__ == "__main__":
     config = configparser.ConfigParser()
     config.read(pathlib.Path(__file__).parent.parent / "config" / "maze.ini")
-
+    simple_server_logger = logger
     secret_key = Fernet.generate_key()
     fernet_cipher = FernetCipher(secret_key)
-    these_directions = Directions()
+    these_directions = Directions(logger)
 
     maze_name, maze_file_name = config["DEFAULT"]["MazeName"], config["DEFAULT"]["MazeFile"]
     default_x_start, default_y_start, default_z_start = [int(config["DEFAULT"][f"{v}_start"]) for v in ["x", "y", "z"]]
