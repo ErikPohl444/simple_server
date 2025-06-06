@@ -87,7 +87,7 @@ class Room:
         self.is_start = False
         self.contents: list[int] = []
         self.x, self.y, self.z = split_coordinates(name)
-        self._room_logger = logger
+        self._room_logger = room_logger
 
     def get_room_coordinates(self) -> list[int]:
         return split_coordinates(self.name)
@@ -149,13 +149,14 @@ class Maze:
         self.maze_file: str = file_name
         self._directions: Directions = directions
         self._cipher: FernetCipher = cipher
+        self._maze_logger = maze_logger
         self._frontier, self._claimed = [], []
         self.x_start, self.y_start, self.z_start = x_start, y_start, z_start
         self.xbound, self.ybound, self.zbound = xbound, ybound, zbound
         self._rooms = [
             [
                 [
-                    Room(f"{x}_{y}_{z}", self._directions, self._cipher)
+                    Room(f"{x}_{y}_{z}", self._directions, self._cipher, self._maze_logger)
                     for z in range(zbound)
                 ] for y in range(ybound)
             ] for x in range(xbound)
@@ -164,7 +165,6 @@ class Maze:
         self._start_url = cipher.encrypt(f'{x_start}_{y_start}_{z_start}'.encode()).decode("utf-8")
         self._starting_place = None
         self._destination = None
-        self._maze_logger = maze_logger
 
     def build_maze_automatically(self) -> None:
         # rule: you can create an exit from a room with one or more exits in it
@@ -331,7 +331,7 @@ if __name__ == "__main__":
     config.read(pathlib.Path(__file__).parent.parent / "config" / "maze.ini")
     simple_server_logger = logger
     secret_key = Fernet.generate_key()
-    fernet_cipher = FernetCipher(secret_key)
+    fernet_cipher = FernetCipher(secret_key, logger)
     these_directions = Directions(logger)
 
     maze_name, maze_file_name = config["DEFAULT"]["MazeName"], config["DEFAULT"]["MazeFile"]
@@ -342,6 +342,7 @@ if __name__ == "__main__":
         maze_file_name,
         these_directions,
         fernet_cipher,
+        logger,
         default_x_start,
         default_y_start,
         default_z_start,
