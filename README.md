@@ -1,3 +1,6 @@
+![Get lost in this](istockphoto-672841286-612x612.jpg)
+
+
 # simple_server
 
 Generates a maze in an N x N x N cube of rooms and allows a user to navigate through the maze.
