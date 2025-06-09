@@ -1,0 +1,22 @@
+[build-system]
+requires = [""]
+build-backend = ""
+
+[project]
+name = "example_package_EPOHL_444"
+version = ""
+authors = [
+  { name="", email="" },
+]
+description = ""
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+Homepage = "https://github.com/[]/[]"
+Issues = "https://github.com/[]/[]/issues"
