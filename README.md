@@ -82,7 +82,25 @@ docker run -p 8080:8080 simple_server
 
 ## Running the Tests
 
-Tests are underway.  Check back soon.
+Thank you for clarifying that your tests use pytest. Here’s a recommended update for the "Running the Tests" section of your README.md:
+
+---
+
+## Running the Tests
+
+To run all tests located in the /tests folder using pytest, execute the following command from the root of the repository:
+
+```bash
+pytest tests
+```
+
+Make sure you have pytest installed. If it’s not already installed, you can add it with:
+
+```bash
+pip install pytest
+```
+
+This will automatically discover and run all tests in the tests directory.
 
 ---
 
